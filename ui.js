@@ -29,6 +29,5 @@
     let msToNextDay = (((24 - currentTime.getHours()) * 60) - currentTime.getMinutes()) * 1000 * 60;
     console.log(msToNextDay);
     
-
     setTimeout(updateDate, msToNextDay);
 }()
