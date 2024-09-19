@@ -20,6 +20,7 @@ body {
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid lightgray;
+    padding-bottom: 5px;
 }
 .titleBar {
     width: 30%;
@@ -45,7 +46,6 @@ body {
 }
 
 /* body */
-
 #bodySec {
     display: flex;
     flex-wrap: wrap;
@@ -53,27 +53,97 @@ body {
     padding-top: 50px;
 }
 .bodyCon {
-    box-sizing: border-box;
     width: 40%;
     padding: 10px;
-}
-.subTitle {
-    color: gray;
-
+    margin-bottom: 50px;
+    height: 250px;
+    position: relative;
 }
 .inputCon {
-    border: 1px solid lightgrey;
+    border: 1px solid rgb(158, 158, 158);
+    padding: 5px;
+    margin-top: 5px;
+    box-sizing: border-box;
+    height: 100%
 }
 .inputElement {
     outline: none;
     resize: none;
 }
 
+.menuIcon {
+    width: 30px;
+}
+.menuIcon:hover {
+    opacity: 0.2;
+}
+.menuIcon > div{
+    width: 15px;
+    height: 1px;
+    background-color: black;
+    margin: 3px auto;
+}
+
+.newBtn {
+    position: absolute;
+    right: 2%;
+    top: 5%;
+
+    border: 1px solid grey;
+    border-radius: 5px;
+    width: 15px;
+    height: 15px;
+}
+.newBtn:hover {
+    background-color: rgb(243, 243, 243);
+}
+.newBtn > div:first-child {
+    width: 10px;
+    height: 1px;
+    position: relative;
+    top: 7px;
+    left: 3px;
+    background-color: grey;
+}
+.newBtn > div:last-child {
+    width: 1px;
+    height: 10px;
+    position: relative;
+    top: 2px;
+    left: 7px;
+    background-color: grey;
+}
+
 /* quick notes */
 #quickNotesInput {
     font-family: 'Space Mono', monospace;
     width: 100%;
-    padding: 5px;
     overflow: auto;
     border: none;
+    height: 100%;
+}
+
+/* reminders */
+.reminderCon {
+    display: flex;
+    padding: 5px 0;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid lightgrey;
+    font-size: 0.9em;
+}
+.reminderCon:last-child {
+    border-bottom: none;
+}
+.reminderCon:hover {
+    background-color: rgb(243, 243, 243);
+}
+.reminderDate {
+    width: 15%;
+    text-align: center;
+    font-size: 0.8em;
+    color: grey;
+}
+.reminderTitle {
+    width: 75%;
 }
