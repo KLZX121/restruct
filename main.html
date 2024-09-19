@@ -15,38 +15,22 @@
         </div>
     </section>
 
+
     <section id="bodySec">
         <div class="bodyCon" id="remindersDiv">
             <span class="subTitle">Reminders</span>
+
             <div class="newBtn" id="newReminderBtn">
                 <div></div>
                 <div></div>
             </div>
-            <div class="inputCon" id="reminderInputCon">
 
-                <div class="reminderCon">
-                    <span class="reminderDate">12/12/2005</span>
-                    <span class="reminderTitle">Reminder</span>
-                    <span class="menuIcon"><div></div><div></div><div></div></span>
-                </div>
-                <div class="reminderCon">
-                    <span class="reminderDate">12/12/2005</span>
-                    <span class="reminderTitle">Reminder</span>
-                    <span class="menuIcon"><div></div><div></div><div></div></span>
-                </div>
-                <div class="reminderCon">
-                    <span class="reminderDate">12/12/2005</span>
-                    <span class="reminderTitle">Reminder</span>
-                    <span class="menuIcon"><div></div><div></div><div></div></span>
-                </div>
-                <div class="reminderCon">
-                    <span class="reminderDate">12/12/2005</span>
-                    <span class="reminderTitle">Reminder</span>
-                    <span class="menuIcon"><div></div><div></div><div></div></span>
-                </div>
+            <div class="inputCon" id="reminderInputCon">
+                
             </div>
             
         </div>
+
 
         <div class="bodyCon" id="quickNotesDiv">
             <span class="subTitle">Quick Notes</span>
@@ -55,12 +39,14 @@
             </div>
         </div>
 
+
         <div class="bodyCon">
             <span class="subTitle">Placeholder</span>
             <div class="inputCon">
 
             </div>
         </div>
+
 
         <div class="bodyCon">
             <span class="subTitle">Placeholder</span>
@@ -69,7 +55,32 @@
             </div>
         </div>
     </section>
+
+
+    <section id="popupSec" style="display: none;">
+        <div id="popupCon">
+            <div class="subTitle" id="popupTitle"></div>
+            <span id="clearPopupBtn">Clear all</span>
+
+            <div class="inputDiv">
+                <label for="nameInput" class="inputLabel">Name</label>
+                <input type="text" id="nameInput" name="nameInput" class="popupInput" placeholder="Max 50 characters" maxlength="50" spellcheck="false">
+            </div>
+            <div class="inputDiv">
+                <label for="dateInput" class="inputLabel">Date</label>
+                <input type="datetime-local" id="dateInput" name="dateInput" class="popupInput">
+            </div>
+            <div class="inputdiv">
+                <span id="popupError"></span>
+            </div>
+            <div class="inputDiv">
+                <button id="submitPopupBtn">Done</button>
+            </div>
+
+        </div>
+    </section>
     
+
     <script src="ui.js"></script>
 </body>
 </html>

@@ -12,6 +12,10 @@ body {
     color: rgb(51, 51, 51);
 }
 
+input {
+    font-family: 'Open Sans', sans-serif;
+}
+
 /* title bar */
 
 #titleBarCon {
@@ -45,7 +49,75 @@ body {
     align-items: center;
 }
 
+/* popup */
+
+#popupSec {
+    display: flex;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    left: 0;
+    top: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    justify-content: center;
+    align-items: center;
+}
+#popupCon {
+    position: relative;
+    width: 30%;
+    height: auto;
+    background-color: white;
+    border-radius: 5px;
+    padding: 10px;
+}
+#popupTitle {
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid lightgrey;
+    font-size: 1.2em;
+}
+#dateInput {
+    width: 40%;
+}
+.inputDiv {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+.inputLabel {
+    font-size: 0.8em;
+    margin-bottom: 5px;
+}
+.popupInput {
+    padding: 2px;
+    border: 1px solid grey;
+    border-radius: 3px;
+    outline: none;
+    width: auto;
+}
+#popupError {
+    font-weight: bold;
+    font-style: oblique;
+    font-size: 0.8em;
+    color: crimson;
+}
+#submitPopupBtn {
+    width: 50px;
+}
+#clearPopupBtn {
+    position: absolute;
+    right: 4%;
+    top: 7%;
+    font-size: 0.8em;
+}
+#clearPopupBtn:hover {
+    color: rgb(158, 158, 158);
+    cursor: pointer;
+}
+
 /* body */
+
 #bodySec {
     display: flex;
     flex-wrap: wrap;
@@ -76,6 +148,7 @@ body {
 }
 .menuIcon:hover {
     opacity: 0.2;
+    cursor: pointer;
 }
 .menuIcon > div{
     width: 15px;
@@ -96,9 +169,10 @@ body {
 }
 .newBtn:hover {
     background-color: rgb(243, 243, 243);
+    cursor: pointer;
 }
 .newBtn > div:first-child {
-    width: 10px;
+    width: 9px;
     height: 1px;
     position: relative;
     top: 7px;
@@ -107,7 +181,7 @@ body {
 }
 .newBtn > div:last-child {
     width: 1px;
-    height: 10px;
+    height: 9px;
     position: relative;
     top: 2px;
     left: 7px;
@@ -115,6 +189,7 @@ body {
 }
 
 /* quick notes */
+
 #quickNotesInput {
     font-family: 'Space Mono', monospace;
     width: 100%;
@@ -124,6 +199,7 @@ body {
 }
 
 /* reminders */
+
 .reminderCon {
     display: flex;
     padding: 5px 0;
@@ -138,12 +214,15 @@ body {
 .reminderCon:hover {
     background-color: rgb(243, 243, 243);
 }
-.reminderDate {
+.reminderTime {
     width: 15%;
     text-align: center;
     font-size: 0.8em;
     color: grey;
+    overflow: hidden;
 }
 .reminderTitle {
     width: 75%;
+    overflow: hidden;
+    white-space: nowrap;
 }
