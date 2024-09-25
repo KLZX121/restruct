@@ -77,8 +77,12 @@ input {
     border-bottom: 1px solid lightgrey;
     font-size: 1.2em;
 }
-#dateInput {
-    width: 40%;
+#dateInput, #timeInput {
+    width: 30%;
+}
+.inputToggle {
+    position: absolute;
+    left: 10%;
 }
 .inputDiv {
     display: flex;
@@ -95,6 +99,9 @@ input {
     border-radius: 3px;
     outline: none;
     width: auto;
+}
+.popupInput:disabled {
+    background-color: lightgrey;
 }
 #popupError {
     font-weight: bold;
@@ -199,6 +206,10 @@ input {
 }
 
 /* reminders */
+
+#reminderInputCon {
+    overflow: auto;
+}
 
 .reminderCon {
     display: flex;

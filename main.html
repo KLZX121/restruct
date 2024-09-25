@@ -67,9 +67,16 @@
                 <input type="text" id="nameInput" name="nameInput" class="popupInput" placeholder="Max 50 characters" maxlength="50" spellcheck="false">
             </div>
             <div class="inputDiv">
+                <input type="checkbox" class="inputToggle" id="enableDateInput">
                 <label for="dateInput" class="inputLabel">Date</label>
-                <input type="datetime-local" id="dateInput" name="dateInput" class="popupInput">
+                <input type="date" id="dateInput" name="dateInput" class="popupInput" disabled>
             </div>
+            <div class="inputDiv">
+                <input type="checkbox" class="inputToggle" id="enableTimeInput">
+                <label for="timeInput" class="inputLabel">Time</label>
+                <input type="time" id="timeInput" name="timeInput" class="popupInput" disabled>
+            </div>
+
             <div class="inputdiv">
                 <span id="popupError"></span>
             </div>
