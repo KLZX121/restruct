@@ -53,6 +53,38 @@ function formatDate(date) {
 }
 
 // ===============
+// KEYBINDS
+// ===============
+
+document.addEventListener('keyup', event => {
+    if (document.activeElement != document.body) return;
+    switch (event.key) {
+        case 'r':
+            newReminderBtn.click();
+            break;
+        case 'q':
+            quickNotesInput.focus();
+            break;
+    }
+});
+popupSec.addEventListener('keyup', event => {
+    if (popupSec.style.display == 'none') return;
+    switch (event.key) {
+        case 'Enter':
+            submitPopupBtn.click();
+            break;
+        case 'Escape':
+            togglePopup(false);
+            break;
+    }
+});
+quickNotesInput.addEventListener('keyup', event => {
+    if (event.key == 'Escape') {
+        quickNotesInput.blur();
+    }
+});
+
+// ===============
 // REMINDERS
 // ===============
 
