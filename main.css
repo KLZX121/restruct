@@ -16,6 +16,12 @@ input {
     font-family: 'Open Sans', sans-serif;
 }
 
+.dodgerblue {
+    color: dodgerblue !important;
+}
+.crimson {
+    color: crimson !important;
+}
 /* 
 ===============
 Titlebar
@@ -273,7 +279,7 @@ Reminders
     background-color: rgb(243, 243, 243);
 }
 .reminderTime {
-    width: 15%;
+    width: 20%;
     text-align: center;
     font-size: 0.8em;
     color: grey;

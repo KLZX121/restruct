@@ -39,6 +39,15 @@ function deleteData(dataType, dataId) {
             }
     }
 }
+function generateReminderData(id) {
+    let data = {
+        id,
+        name: nameInput.value,
+        date: enableDateInput.checked ? new Date(dateInput.value) : null,
+        time: enableTimeInput.checked ? timeInput.value : null
+    }
+    return data;
+}
 
 // ===============
 // LIVE TIME
@@ -122,39 +131,42 @@ quickNotesInput.addEventListener('keyup', event => {
 
 newReminderBtn.addEventListener('click', () => togglePopup(true, 0));
 
-function generateReminderData(id) {
-    let data = {
-        id,
-        name: nameInput.value,
-        date: enableDateInput.checked ? new Date(dateInput.value) : null,
-        time: enableTimeInput.checked ? timeInput.value : null
-    }
-    return data;
-}
 function addNewReminder(reminderData) {
     let dateStr = '&#8734;'
+    let isToday = false;
+    const currentTime = new Date();
     if (reminderData.date) {
-        const currentTime = new Date();
-        let dayDiff = reminderData.date.getDay() - currentTime.getDay();
+        let dayDiff = reminderData.date.getDate() - currentTime.getDate();
         let monthDiff = Math.abs(reminderData.date.getMonth() - currentTime.getMonth());
         let yearDiff = Math.abs(reminderData.date.getFullYear() - currentTime.getFullYear());
 
-        if (!yearDiff && !monthDiff && !dayDiff) {
+        isToday = !yearDiff && !monthDiff && !dayDiff;
+
+        if (isToday) {
             dateStr = 'Today ' + (reminderData.time || '');
-            
         } else if (!yearDiff && !monthDiff && dayDiff == 1) {
             dateStr = 'Tomorrow ' + (reminderData.time || '');
-
+        } else if (!yearDiff && !monthDiff && dayDiff < 7 && dayDiff > 0) {
+            dateStr =  ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][reminderData.date.getDay()] + ' ' + (reminderData.time || '');
         } else {
             let date = formatDate(reminderData.date);
             dateStr = `${date.day}/${date.month}/${date.year}`;
         }
     } else if (reminderData.time) {
         dateStr = 'Today ' + reminderData.time;
+        isToday = true;
     }
-    let reminderTimeHTML = `<span class="reminderTime">${dateStr}</span>`;
 
+    let dateColor = '';
+    if (isToday) {
+        dateColor = 'dodgerblue';
+    } else if (reminderData.date?.getTime() - currentTime.getTime() < 0) {
+        dateColor = 'crimson';
+    }
+
+    let reminderTimeHTML = `<span class="reminderTime ${dateColor}">${dateStr}</span>`;
     let reminderTitleHTML = `<span class="reminderTitle">${reminderData.name}</span>`;
+    let reminderMenuHTML = `<span class="menuIcon" id="menuR${reminderData.id}"><div></div><div></div><div></div></span>`;
     
     let reminderHTML = document.createElement('div');
     reminderHTML.className = 'reminderCon';
@@ -162,7 +174,7 @@ function addNewReminder(reminderData) {
     reminderHTML.innerHTML = `
         ${reminderTimeHTML}
         ${reminderTitleHTML}
-        <span class="menuIcon" id="menuR${reminderData.id}"><div></div><div></div><div></div></span>
+        ${reminderMenuHTML}
     `;
 
     reminderInputCon.appendChild(reminderHTML);
@@ -186,6 +198,7 @@ function deleteReminder(reminderId) {
 // ===============
 // MENU
 // ===============
+
 document.addEventListener('contextmenu', event => {
     if ([event.target.className, event.target.parentElement.className].includes('reminderCon')) {
         event.preventDefault();
