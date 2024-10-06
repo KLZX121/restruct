@@ -16,7 +16,11 @@ input {
     font-family: 'Open Sans', sans-serif;
 }
 
-/* title bar */
+/* 
+===============
+Titlebar
+===============
+*/
 
 #titleBarCon {
     height: 5%;
@@ -49,7 +53,11 @@ input {
     align-items: center;
 }
 
-/* popup */
+/* 
+===============
+Popup
+===============
+*/
 
 #popupSec {
     display: flex;
@@ -83,6 +91,7 @@ input {
 .inputToggle {
     position: absolute;
     left: 10%;
+    outline: none;
 }
 .inputDiv {
     display: flex;
@@ -123,7 +132,37 @@ input {
     cursor: pointer;
 }
 
-/* body */
+/* 
+===============
+Item Menu
+===============
+*/
+
+#itemMenu {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid grey;
+    border-radius: 3px;
+    background-color: white;
+}
+.menuOption {
+    /*border: 1px solid grey;*/
+    padding: 0 2px;
+    font-size: 0.8em;
+    color: grey;
+}
+.menuOption:hover {
+    background-color: rgb(243, 243, 243);
+    color: black;
+    cursor: pointer;
+}
+
+/* 
+===============
+Body
+===============
+*/
 
 #bodySec {
     display: flex;
@@ -195,7 +234,11 @@ input {
     background-color: grey;
 }
 
-/* quick notes */
+/* 
+===============
+Quick notes
+===============
+*/
 
 #quickNotesInput {
     font-family: 'Space Mono', monospace;
@@ -205,7 +248,11 @@ input {
     height: 100%;
 }
 
-/* reminders */
+/* 
+===============
+Reminders
+===============
+*/
 
 #reminderInputCon {
     overflow: auto;

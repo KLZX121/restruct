@@ -3,9 +3,29 @@
 // * edit/delete reminders
 // * global data loading
 
+
+// ===============
+// DATA MANAGEMENT
+// ===============
+
 let globalData = {
     reminders: [],
     remindersN: 0
+}
+
+function retrieveData(dataType, dataId) {
+    switch (dataType) {
+        case 'reminder':
+            let output = null;
+            for (let i = 0; i < globalData.reminders.length; i++) {
+                const reminder = globalData.reminders[i];
+                if (reminder.id == dataId) {
+                    output = reminder;
+                    break;
+                }
+            }
+            return output;
+    }
 }
 
 // ===============
@@ -90,15 +110,27 @@ quickNotesInput.addEventListener('keyup', event => {
 
 newReminderBtn.addEventListener('click', () => togglePopup(true, 0));
 
+function generateReminderData(id) {
+    let data = {
+        id,
+        name: nameInput.value,
+        date: enableDateInput.checked ? new Date(dateInput.value) : null,
+        time: enableTimeInput.checked ? timeInput.value : null
+    }
+    return data;
+}
 function addNewReminder(reminderData) {
     let dateStr = '&#8734;'
     if (reminderData.date) {
-        let dateDiff = Math.floor((reminderData.date - new Date()) / 86400000);
+        const currentTime = new Date();
+        let dayDiff = reminderData.date.getDay() - currentTime.getDay();
+        let monthDiff = Math.abs(reminderData.date.getMonth() - currentTime.getMonth());
+        let yearDiff = Math.abs(reminderData.date.getFullYear() - currentTime.getFullYear());
 
-        if (dateDiff == 0) {
+        if (!yearDiff && !monthDiff && !dayDiff) {
             dateStr = 'Today ' + (reminderData.time || '');
             
-        } else if (dateDiff == 1) {
+        } else if (!yearDiff && !monthDiff && dayDiff == 1) {
             dateStr = 'Tomorrow ' + (reminderData.time || '');
 
         } else {
@@ -112,15 +144,46 @@ function addNewReminder(reminderData) {
 
     let reminderTitleHTML = `<span class="reminderTitle">${reminderData.name}</span>`;
     
-    let reminderHTML = `
-        <div class="reminderCon" id="reminder${reminderData.id}">
-            ${reminderTimeHTML}
-            ${reminderTitleHTML}
-            <span class="menuIcon"><div></div><div></div><div></div></span>
-        </div>
+    let reminderHTML = document.createElement('div');
+    reminderHTML.className = 'reminderCon';
+    reminderHTML.id = `reminder${reminderData.id}`;
+    reminderHTML.innerHTML = `
+        ${reminderTimeHTML}
+        ${reminderTitleHTML}
+        <span class="menuIcon" id="menuR${reminderData.id}"><div></div><div></div><div></div></span>
     `;
 
-    reminderInputCon.innerHTML += reminderHTML;
+    reminderInputCon.appendChild(reminderHTML);
+
+    document.getElementById(`menuR${reminderData.id}`).addEventListener('click', event => {
+        menuClick(event, reminderData.id);
+    });
+}
+function editReminder(data) {
+    console.log(data);
+    
+    document.getElementById(`reminder${data.id}`).remove();
+    addNewReminder(data);
+}
+
+// ===============
+// MENU
+// ===============
+
+function menuClick(event, reminderId) {
+    // show menu
+    itemMenu.style.left = event.clientX + 10;
+    itemMenu.style.top = event.clientY + 10;
+    itemMenu.style.display = 'flex';
+    
+    document.addEventListener('mousedown', event => {
+        itemMenu.style.display = 'none';
+
+        if (event.target == menuOptionEdit) {
+            itemId.innerHTML = reminderId;
+            togglePopup(true, 1, retrieveData('reminder', reminderId));
+        }
+    }, { once: true });
 }
 
 // ===============
@@ -128,77 +191,110 @@ function addNewReminder(reminderData) {
 // ===============
 
 popupSec.addEventListener('click', event => {
-    if (event.target == popupSec) togglePopup(false);
+    if (event.target == popupSec && !window.getSelection().toString()) togglePopup(false);
 });
 submitPopupBtn.addEventListener('click', () => submitPopup());
 clearPopupBtn.addEventListener('click', () => resetPopup());
 
 enableDateInput.addEventListener('change', () => {
-    if (enableDateInput.checked) {
-        dateInput.removeAttribute('disabled');
-    } else {
-        dateInput.setAttribute('disabled', '');
-    }
+    dateInput.disabled = !enableDateInput.checked;
 });
 enableTimeInput.addEventListener('change', () => {
-    if (enableTimeInput.checked) {
-        timeInput.removeAttribute('disabled');
-    } else {
-        timeInput.setAttribute('disabled', '');
-    }
+    timeInput.disabled = !enableTimeInput.checked;
 });
 
 // data validation and submission
+function checkInputs() {
+    let validInputs = true;
+
+    if (nameInput.value.length > 50) {
+        popupError.textContent = 'Name too long';
+        validInputs = false;
+    } else if (!nameInput.value) {
+        popupError.textContent = 'Please enter a name';
+        validInputs = false;
+    } else if (enableDateInput.checked && !dateInput.value) {
+        popupError.textContent = 'Please enter a date';
+        validInputs = false;
+    } else if (enableTimeInput.checked && !timeInput.value) {
+        popupError.textContent = 'Please enter a time';
+        validInputs = false;
+    }
+    
+    return validInputs;
+}
+function togglePopup(show, settingType, data) {
+    resetPopup(true);
+
+    popupSec.style.display = show ? 'flex' : 'none';
+
+    if (!show) return;
+
+    // settingType variable is an index of this array
+    const settingsTypes = ['New Reminder', 'Edit Reminder'];
+
+    popupTitle.textContent = settingsTypes[settingType];
+
+    // input data to form if exists
+    if (data) {
+        nameInput.value = data.name;
+        if (data.date) {
+            enableDateInput.checked = true;
+            dateInput.disabled = false;
+            dateInput.value = data.date.toISOString().slice(0, 10);
+        }
+        if (data.time) {
+            enableTimeInput.checked = true;
+            timeInput.disabled = false;
+            timeInput.value = data.time;
+        }
+    }
+
+    nameInput.focus();
+}
 function submitPopup() {
     popupError.textContent = '';
+
     switch(popupTitle.textContent) {
         case 'New Reminder':
-            if (nameInput.value.length > 50) {
-                popupError.textContent = 'Name too long';
-                break;
-            }
-            if (!nameInput.value) {
-                popupError.textContent = 'Please enter a name';
-                break;
-            }
-            if (enableDateInput.checked && !dateInput.value) {
-                popupError.textContent = 'Please enter a date';
-                break;
-            }
-            if (enableTimeInput.checked && !timeInput.value) {
-                popupError.textContent = 'Please enter a time';
-                break;
-            }
+            if (!checkInputs()) break;
 
-            let reminderData = {
-                id: globalData.remindersN,
-                name: nameInput.value,
-                date: enableDateInput.checked? new Date(dateInput.value) : null,
-                time: timeInput.value || null
-            }
-            console.log(reminderData);
+            // get data from form
+            let reminderData = generateReminderData(globalData.remindersN);
             
+            // update global data
             globalData.remindersN++;
             globalData.reminders.push(reminderData);
             
+            // add to dom
             addNewReminder(reminderData);
-
-            togglePopup(false, null);
-            resetPopup(true);
             
+            togglePopup(false);
             break;
-    }
-}
-function togglePopup(show, settingType) {
-    popupSec.style.display = show ? 'flex' : 'none';
 
-    if (show) {
-        // settingType variable is an index of this array
-        const settingsTypes = ['New Reminder'];
-    
-        popupTitle.textContent = settingsTypes[settingType];
+        case 'Edit Reminder':
+            // retrieve reminder id
+            let id = itemId.innerHTML;
 
-        nameInput.focus();
+            if (!checkInputs()) break;
+
+            // get data from form
+            let data = generateReminderData(id);
+
+            // update global data
+            for (let i = 0; i < globalData.reminders.length; i++) {
+                const reminder = globalData.reminders[i];
+                if ((reminder.id) == id) {
+                    globalData.reminders[i] = data;
+                    break;
+                }
+            }
+
+            // edit dom
+            editReminder(data);
+
+            togglePopup(false);
+            break;
     }
 }
 function resetPopup(clearTitle = false) {
