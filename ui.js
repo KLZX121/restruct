@@ -1,7 +1,7 @@
 // todo:
-// * dynamic reminder dates/times
-// * edit/delete reminders
-// * global data loading
+// * global data import/export
+// * add some colour
+// * scheduler
 
 
 // ===============
@@ -104,7 +104,7 @@ function formatDate(date, format) {
     return dateString;
 }
 function formatSmartDateTime(date, isFullDay) {
-    let dateStr = '&#8734;'
+    let dateStr = ''
     const currentTime = new Date();
     if (date) {
         let dayDiff = date.getDate() - currentTime.getDate();
@@ -181,7 +181,9 @@ function addNewReminder(reminderData) {
         dateColor = 'dodgerblue';
     }
 
-    let reminderTimeHTML = `<span class="reminderTime ${dateColor}">${dateStr}</span>`;
+    let infinitySymbol = dateStr ? '' : 'infinity';
+
+    let reminderTimeHTML = `<span class="reminderTime ${dateColor} ${infinitySymbol}">${dateStr}</span>`;
     let reminderTitleHTML = `<span class="reminderTitle">${reminderData.name}</span>`;
     let reminderMenuHTML = `<span class="menuIcon" id="menuR${reminderData.id}"><div></div><div></div><div></div></span>`;
     
@@ -213,6 +215,7 @@ function deleteReminder(reminderId) {
     deleteData('reminder', reminderId);
 }
 // sorts reminders by date from closest to furthest
+// also fully refreshes reminders
 function sortReminders() {
     globalData.reminders.sort((a, b) => {
         let dateOne = a.date || new Date((new Date()).setHours(23, 59));

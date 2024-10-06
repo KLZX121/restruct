@@ -290,3 +290,10 @@ Reminders
     overflow: hidden;
     white-space: nowrap;
 }
+
+.infinity {
+    transform: scale(2);
+}
+.infinity::before {
+    content: '\221E';
+}
