@@ -27,6 +27,18 @@ function retrieveData(dataType, dataId) {
             return output;
     }
 }
+function deleteData(dataType, dataId) {
+    switch (dataType) {
+        case 'reminder':
+            for (let i = 0; i < globalData.reminders.length; i++) {
+                const reminder = globalData.reminders[i];
+                if (reminder.id == dataId) {
+                    globalData.reminders.splice(i, 1);
+                    break;
+                }
+            }
+    }
+}
 
 // ===============
 // LIVE TIME
@@ -165,10 +177,38 @@ function editReminder(data) {
     document.getElementById(`reminder${data.id}`).remove();
     addNewReminder(data);
 }
+function deleteReminder(reminderId) {
+    // delete from dom
+    document.getElementById(`reminder${reminderId}`).remove();
+
+    // delete from global data
+    deleteData('reminder', reminderId);
+}
 
 // ===============
 // MENU
 // ===============
+document.addEventListener('contextmenu', event => {
+    if ([event.target.className, event.target.parentElement.className].includes('reminderCon')) {
+        event.preventDefault();
+
+        // extract id
+        let targetId = event.target.id || event.target.parentElement.id;
+        let id = '';
+        
+        for (let i = 1; i <= targetId.length; i++) {
+            if (isNaN(targetId.slice(-i))) {
+                id = targetId.slice(targetId.length - i + 1);
+                break;
+            } 
+        }
+        console.log(id);
+        id = parseInt(id);
+        console.log(id);        
+        
+        menuClick(event, id);
+    }
+});
 
 function menuClick(event, reminderId) {
     // show menu
@@ -182,6 +222,8 @@ function menuClick(event, reminderId) {
         if (event.target == menuOptionEdit) {
             itemId.innerHTML = reminderId;
             togglePopup(true, 1, retrieveData('reminder', reminderId));
+        } else if (event.target == menuOptionDelete) {
+            deleteReminder(reminderId);
         }
     }, { once: true });
 }
@@ -249,8 +291,7 @@ function togglePopup(show, settingType, data) {
             timeInput.value = data.time;
         }
     }
-
-    nameInput.focus();
+    setTimeout(() => nameInput.focus(), 50);
 }
 function submitPopup() {
     popupError.textContent = '';
