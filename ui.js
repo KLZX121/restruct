@@ -13,6 +13,24 @@ let globalData = {
     remindersN: 0
 }
 
+globalData = parseGlobalData('{"reminders":[{"id":7,"name":"ages ago","date":"2023-12-31T13:00:00.000Z","isFullDay":true},{"id":3,"name":"yesterday","date":"2024-10-05T14:00:00.000Z","isFullDay":true},{"id":1,"name":"today full","date":"2024-10-06T13:00:00.000Z","isFullDay":true},{"id":2,"name":"today timed","date":"2024-10-07T09:06:38.563Z","isFullDay":false},{"id":0,"name":"long 1","date":null,"isFullDay":false},{"id":4,"name":"tomorrow","date":"2024-10-07T13:00:00.000Z","isFullDay":true},{"id":5,"name":"wednesday timed","date":"2024-10-09T09:07:00.000Z","isFullDay":false},{"id":6,"name":"long way away timed","date":"2024-10-24T23:07:00.000Z","isFullDay":false}],"remindersN":8}');
+refreshReminders();
+
+// parse globalData from stringified JSON
+function parseGlobalData(stringData) {
+    data = JSON.parse(stringData);
+
+    // parse reminder dates
+    data.reminders.forEach((reminder, index) => {
+        if (reminder.date && !(reminder.date instanceof Date)) {
+            data.reminders[index].date = new Date(reminder.date);
+        }
+    });
+
+    return data;
+}
+
+// return a piece of data from globalData
 function retrieveData(dataType, dataId) {
     switch (dataType) {
         case 'reminder':
@@ -27,6 +45,7 @@ function retrieveData(dataType, dataId) {
             return output;
     }
 }
+// delete a piece of data from globalData
 function deleteData(dataType, dataId) {
     switch (dataType) {
         case 'reminder':
@@ -39,6 +58,7 @@ function deleteData(dataType, dataId) {
             }
     }
 }
+// generate a reminder data object from the form
 function generateReminderData(id) {
     let date;
     let isFullDay = false;
@@ -168,6 +188,30 @@ quickNotesInput.addEventListener('keyup', event => {
 
 newReminderBtn.addEventListener('click', () => togglePopup(true, 0));
 
+function editReminder(data) {
+    document.getElementById(`reminder${data.id}`).remove();
+    addNewReminder(data);
+    refreshReminders();
+}
+// sorts reminders by date from closest to furthest
+// also fully updates reminders in dom
+function refreshReminders() {
+
+    globalData.reminders.sort((a, b) => {
+        let dateOne = a.date || new Date((new Date()).setHours(23, 59));
+        let dateTwo = b.date || new Date((new Date()).setHours(23, 59));
+        
+        return dateOne.getTime() - dateTwo.getTime();
+    });
+
+    // remove reminders from dom
+    reminderInputCon.textContent = '';
+    // re-add reminders to dom
+    globalData.reminders.forEach(reminder => {
+        addNewReminder(reminder);
+    });
+}
+// adds a reminder to the dom (does not change global data)
 function addNewReminder(reminderData) {
     let dateStr = formatSmartDateTime(reminderData.date, reminderData.isFullDay);
 
@@ -202,34 +246,13 @@ function addNewReminder(reminderData) {
         menuClick(event, reminderData.id);
     });
 }
-function editReminder(data) {
-    document.getElementById(`reminder${data.id}`).remove();
-    addNewReminder(data);
-    sortReminders();
-}
+// deletes a reminder from the dom and global data
 function deleteReminder(reminderId) {
     // delete from dom
     document.getElementById(`reminder${reminderId}`).remove();
 
     // delete from global data
     deleteData('reminder', reminderId);
-}
-// sorts reminders by date from closest to furthest
-// also fully refreshes reminders
-function sortReminders() {
-    globalData.reminders.sort((a, b) => {
-        let dateOne = a.date || new Date((new Date()).setHours(23, 59));
-        let dateTwo = b.date || new Date((new Date()).setHours(23, 59));
-        
-        return dateOne.getTime() - dateTwo.getTime();
-    });
-
-    // remove reminders from dom
-    reminderInputCon.textContent = '';
-    // re-add reminders to dom
-    globalData.reminders.forEach(reminder => {
-        addNewReminder(reminder);
-    });
 }
 
 // ===============
@@ -356,7 +379,7 @@ function submitPopup() {
             // add to dom
             addNewReminder(reminderData);
 
-            sortReminders();
+            refreshReminders();
             
             togglePopup(false);
             break;
@@ -382,7 +405,7 @@ function submitPopup() {
             // edit dom
             editReminder(data);
 
-            sortReminders();
+            refreshReminders();
 
             togglePopup(false);
             break;
