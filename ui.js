@@ -172,8 +172,6 @@ function addNewReminder(reminderData) {
     });
 }
 function editReminder(data) {
-    console.log(data);
-    
     document.getElementById(`reminder${data.id}`).remove();
     addNewReminder(data);
 }
@@ -202,9 +200,7 @@ document.addEventListener('contextmenu', event => {
                 break;
             } 
         }
-        console.log(id);
         id = parseInt(id);
-        console.log(id);        
         
         menuClick(event, id);
     }
