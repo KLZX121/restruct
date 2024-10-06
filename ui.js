@@ -99,11 +99,8 @@ function formatDate(date, format) {
     month = (month < 10 ? '0' : '') + month;
     let year = date.getFullYear();
 
-    if (format == 'dd/mm/yyyy') {
-        return `${day}/${month}/${year}`;
-    } else if (format == 'yyyy-mm-dd') {
-        return `${year}-${month}-${day}`;
-    }
+    dateString = format.replace('dd', day).replace('mm', month).replace('yyyy', year);
+    return dateString;
 }
 function formatSmartDateTime(date, isFullDay) {
     let dateStr = '&#8734;'
