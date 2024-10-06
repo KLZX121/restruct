@@ -51,6 +51,7 @@ function generateReminderData(id) {
         date.setHours(timeInput.value.split(':')[0], timeInput.value.split(':')[1])
     } else if (enableDateInput.checked) {
         isFullDay = true;
+        date.setHours(0, 0);
     } else {
         date = null;
     }
@@ -202,6 +203,7 @@ function addNewReminder(reminderData) {
 function editReminder(data) {
     document.getElementById(`reminder${data.id}`).remove();
     addNewReminder(data);
+    sortReminders();
 }
 function deleteReminder(reminderId) {
     // delete from dom
@@ -209,6 +211,22 @@ function deleteReminder(reminderId) {
 
     // delete from global data
     deleteData('reminder', reminderId);
+}
+// sorts reminders by date from closest to furthest
+function sortReminders() {
+    globalData.reminders.sort((a, b) => {
+        let dateOne = a.date || new Date((new Date()).setHours(23, 59));
+        let dateTwo = b.date || new Date((new Date()).setHours(23, 59));
+        
+        return dateOne.getTime() - dateTwo.getTime();
+    });
+
+    // remove reminders from dom
+    reminderInputCon.textContent = '';
+    // re-add reminders to dom
+    globalData.reminders.forEach(reminder => {
+        addNewReminder(reminder);
+    });
 }
 
 // ===============
@@ -245,7 +263,7 @@ function menuClick(event, reminderId) {
         itemMenu.style.display = 'none';
 
         if (event.target == menuOptionEdit) {
-            itemId.innerHTML = reminderId;
+            itemId.textContent = reminderId;
             togglePopup(true, 1, retrieveData('reminder', reminderId));
         } else if (event.target == menuOptionDelete) {
             deleteReminder(reminderId);
@@ -334,13 +352,15 @@ function submitPopup() {
             
             // add to dom
             addNewReminder(reminderData);
+
+            sortReminders();
             
             togglePopup(false);
             break;
 
         case 'Edit Reminder':
             // retrieve reminder id
-            let id = itemId.innerHTML;
+            let id = parseInt(itemId.textContent);
 
             if (!checkInputs()) break;
 
@@ -358,6 +378,8 @@ function submitPopup() {
 
             // edit dom
             editReminder(data);
+
+            sortReminders();
 
             togglePopup(false);
             break;
