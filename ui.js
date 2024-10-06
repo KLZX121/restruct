@@ -171,10 +171,13 @@ function addNewReminder(reminderData) {
     let dateStr = formatSmartDateTime(reminderData.date, reminderData.isFullDay);
 
     let dateColor = '';
-    if (dateStr.includes('Today')) {
+    const timeDifference = reminderData.date?.getTime() - (new Date()).getTime();
+    const isToday = dateStr.includes('Today');
+
+    if (timeDifference < 0) {
+        dateColor = (isToday && reminderData.isFullDay) ? 'dodgerblue' : 'crimson';
+    } else if (isToday) {
         dateColor = 'dodgerblue';
-    } else if (reminderData.date?.getTime() - (new Date()).getTime() < 0) {
-        dateColor = 'crimson';
     }
 
     let reminderTimeHTML = `<span class="reminderTime ${dateColor}">${dateStr}</span>`;
