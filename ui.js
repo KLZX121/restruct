@@ -40,11 +40,26 @@ function deleteData(dataType, dataId) {
     }
 }
 function generateReminderData(id) {
+    let date;
+    let isFullDay = false;
+    if (enableDateInput.checked) {
+        date = new Date(dateInput.value);
+    }  else {
+        date = new Date();
+    }
+    if (enableTimeInput.checked) {
+        date.setHours(timeInput.value.split(':')[0], timeInput.value.split(':')[1])
+    } else if (enableDateInput.checked) {
+        isFullDay = true;
+    } else {
+        date = null;
+    }
+
     let data = {
         id,
         name: nameInput.value,
-        date: enableDateInput.checked ? new Date(dateInput.value) : null,
-        time: enableTimeInput.checked ? timeInput.value : null
+        date,
+        isFullDay
     }
     return data;
 }
@@ -54,11 +69,9 @@ function generateReminderData(id) {
 // ===============
 
 !function updateTime() {
-    let time = formatTime(new Date());
+    timeDisp.textContent = formatTime(new Date());
 
-    timeDisp.textContent = `${time.hours}:${time.minutes}`;
-
-    setTimeout(updateTime, (60 - time.seconds) * 1000);
+    setTimeout(updateTime, (60 - (new Date()).getSeconds()) * 1000);
 }();
 !function updateDate() {
     const currentTime = new Date();
@@ -66,8 +79,7 @@ function generateReminderData(id) {
     let day = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][currentTime.getDay()];
     dayDisp.textContent = day;
 
-    let dateFormat = formatDate(currentTime);
-    date.textContent = `${dateFormat.day}/${dateFormat.month}/${dateFormat.year}`;
+    date.textContent = formatDate(currentTime, 'dd/mm/yyyy');
 
     let msToNextDay = (((24 - currentTime.getHours()) * 60) - currentTime.getMinutes()) * 1000 * 60;
     setTimeout(updateDate, msToNextDay);
@@ -77,22 +89,49 @@ function formatTime(date) {
     hours = (hours < 10 ? '0' : '') + hours;
     let minutes = date.getMinutes();
     minutes = (minutes < 10 ? '0' : '') + minutes;
-    let seconds = date.getSeconds();
 
-    // String hours, String minutes, Number seconds
-    return {hours, minutes, seconds};
+    return `${hours}:${minutes}`;
 }
-function formatDate(date) {
+function formatDate(date, format) {
     let day = date.getDate();
     day = (day < 10 ? '0' : '') + day;
     let month = date.getMonth() + 1;
     month = (month < 10 ? '0' : '') + month;
     let year = date.getFullYear();
 
-    // String day, String month, Number year
-    return {day, month, year};
+    if (format == 'dd/mm/yyyy') {
+        return `${day}/${month}/${year}`;
+    } else if (format == 'yyyy-mm-dd') {
+        return `${year}-${month}-${day}`;
+    }
 }
+function formatSmartDateTime(date, isFullDay) {
+    let dateStr = '&#8734;'
+    const currentTime = new Date();
+    if (date) {
+        let dayDiff = date.getDate() - currentTime.getDate();
+        let monthDiff = Math.abs(date.getMonth() - currentTime.getMonth());
+        let yearDiff = Math.abs(date.getFullYear() - currentTime.getFullYear());
 
+        // generate day
+        if (!yearDiff && !monthDiff && !dayDiff) {
+            dateStr = 'Today';
+        } else if (!yearDiff && !monthDiff && dayDiff == 1) {
+            dateStr = 'Tomorrow';
+        } else if (!yearDiff && !monthDiff && dayDiff < 7 && dayDiff > 0) {
+            dateStr =  ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
+        } else {
+            dateStr = formatDate(date, 'dd/mm/yyyy');
+        }
+
+        // generate time
+        if (!isFullDay && !dateStr.includes('/')) {
+            dateStr += ' ' + formatTime(date);
+        }
+    }
+
+    return dateStr;
+}
 // ===============
 // KEYBINDS
 // ===============
@@ -132,35 +171,12 @@ quickNotesInput.addEventListener('keyup', event => {
 newReminderBtn.addEventListener('click', () => togglePopup(true, 0));
 
 function addNewReminder(reminderData) {
-    let dateStr = '&#8734;'
-    let isToday = false;
-    const currentTime = new Date();
-    if (reminderData.date) {
-        let dayDiff = reminderData.date.getDate() - currentTime.getDate();
-        let monthDiff = Math.abs(reminderData.date.getMonth() - currentTime.getMonth());
-        let yearDiff = Math.abs(reminderData.date.getFullYear() - currentTime.getFullYear());
-
-        isToday = !yearDiff && !monthDiff && !dayDiff;
-
-        if (isToday) {
-            dateStr = 'Today ' + (reminderData.time || '');
-        } else if (!yearDiff && !monthDiff && dayDiff == 1) {
-            dateStr = 'Tomorrow ' + (reminderData.time || '');
-        } else if (!yearDiff && !monthDiff && dayDiff < 7 && dayDiff > 0) {
-            dateStr =  ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][reminderData.date.getDay()] + ' ' + (reminderData.time || '');
-        } else {
-            let date = formatDate(reminderData.date);
-            dateStr = `${date.day}/${date.month}/${date.year}`;
-        }
-    } else if (reminderData.time) {
-        dateStr = 'Today ' + reminderData.time;
-        isToday = true;
-    }
+    let dateStr = formatSmartDateTime(reminderData.date, reminderData.isFullDay);
 
     let dateColor = '';
-    if (isToday) {
+    if (dateStr.includes('Today')) {
         dateColor = 'dodgerblue';
-    } else if (reminderData.date?.getTime() - currentTime.getTime() < 0) {
+    } else if (reminderData.date?.getTime() - (new Date()).getTime() < 0) {
         dateColor = 'crimson';
     }
 
@@ -292,12 +308,12 @@ function togglePopup(show, settingType, data) {
         if (data.date) {
             enableDateInput.checked = true;
             dateInput.disabled = false;
-            dateInput.value = data.date.toISOString().slice(0, 10);
+            dateInput.value = formatDate(data.date, 'yyyy-mm-dd');
         }
-        if (data.time) {
+        if (data.date && !data.isFullDay) {
             enableTimeInput.checked = true;
             timeInput.disabled = false;
-            timeInput.value = data.time;
+            timeInput.value = formatTime(data.date);
         }
     }
     setTimeout(() => nameInput.focus(), 50);
