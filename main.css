@@ -297,6 +297,6 @@ Reminders
 .infinity::before {
     content: '\221E';
 }
-.noBorder {
+.mergedReminder {
     border-top: none !important;
 }

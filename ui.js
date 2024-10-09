@@ -140,7 +140,7 @@ function formatDate(date, format, doLeadingZeroes = true) {
     dateString = format.replace('dd', day).replace('mm', month).replace('yyyy', year);
     return dateString;
 }
-function formatSmartDateTime(date, isFullDay) {
+function formatSmartDateTime(date, isFullDay, isMerged) {
     let dateStr = ''
     const currentTime = new Date();
     if (date) {
@@ -149,17 +149,19 @@ function formatSmartDateTime(date, isFullDay) {
         let yearDiff = Math.abs(date.getFullYear() - currentTime.getFullYear());
 
         // generate day
-        if (!yearDiff && !monthDiff && !dayDiff) {
-            dateStr = 'Today';
-        } else if (!yearDiff && !monthDiff && dayDiff == -1) {
-            dateStr = 'Yesterday';
-        } else if (!yearDiff && !monthDiff && dayDiff == 1) {
-            dateStr = 'Tomorrow';
-        } else if (!yearDiff && !monthDiff && dayDiff < 7 && dayDiff > 0) {
-            dateStr =  ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
-        } else {
-            dateStr = formatDate(date, `dd/mm${yearDiff ? '/yyyy' : ''}`, false);
-        } 
+        if (!isMerged) {
+            if (!yearDiff && !monthDiff && !dayDiff) {
+                dateStr = 'Today';
+            } else if (!yearDiff && !monthDiff && dayDiff == -1) {
+                dateStr = 'Yesterday';
+            } else if (!yearDiff && !monthDiff && dayDiff == 1) {
+                dateStr = 'Tomorrow';
+            } else if (!yearDiff && !monthDiff && dayDiff < 7 && dayDiff > 0) {
+                dateStr =  ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
+            } else {
+                dateStr = formatDate(date, `dd/mm${yearDiff ? '/yyyy' : ''}`, false);
+            }
+        }
 
         // generate time
         if (!isFullDay && !dateStr.includes('/')) {
@@ -169,6 +171,8 @@ function formatSmartDateTime(date, isFullDay) {
                 dateStr += ' ' + formatTime(date);
             }
         }
+    } else {
+        dateStr = 'inf';
     }
 
     return dateStr;
@@ -235,8 +239,27 @@ function refreshReminders() {
 }
 // adds a reminder to the dom (does not change global data)
 function addNewReminder(reminderData) {
+    // generate parent html
+    let reminderHTML = document.createElement('div');
+
+    // merge reminders on same day
+    let conClassList = 'reminderCon';
+    const prevReminderData = reminderInputCon.lastChild ? retrieveData('reminder', extractId(reminderInputCon.lastChild.id)) : null;
+    let isMerged = false;
+    if (
+        (prevReminderData?.date == null && reminderData.date == null) ||
+        (prevReminderData?.date && reminderData.date && (formatDate(prevReminderData.date, 'yyyymmdd') == formatDate(reminderData.date, 'yyyymmdd')))
+    ) {
+        conClassList += ' mergedReminder';
+        isMerged = true;
+    }
+    reminderHTML.className = conClassList;
+    reminderHTML.id = `reminder${reminderData.id}`;
+
+
+    // generate children html
     // format date
-    let dateStr = formatSmartDateTime(reminderData.date, reminderData.isFullDay);
+    let dateStr = formatSmartDateTime(reminderData.date, reminderData.isFullDay, isMerged);
 
     let dateClassList = '';
     const timeDifference = reminderData.date?.getTime() - (new Date()).getTime();
@@ -248,23 +271,13 @@ function addNewReminder(reminderData) {
         dateClassList += 'dodgerblue';
     }
 
-    dateClassList += dateStr ? '' : ' infinity';
+    dateClassList += (dateStr == 'inf' && !isMerged) ? ' infinity' : '';
 
-    // generate children html
-    let reminderDateHTML = `<span class="reminderTime ${dateClassList}">${dateStr}</span>`;
+    let reminderDateHTML = `<span class="reminderTime ${dateClassList}">${dateStr == 'inf' ? '' : dateStr}</span>`;
     let reminderTitleHTML = `<span class="reminderTitle">${reminderData.name}</span>`;
     let reminderMenuHTML = `<span class="menuIcon" id="menuR${reminderData.id}"><div></div><div></div><div></div></span>`;
     
-    // generate parent html
-    // merge reminders on similar day
-    let conClassList = 'reminderCon';
-    const prevReminderData = reminderInputCon.lastChild ? retrieveData('reminder', extractId(reminderInputCon.lastChild.id)) : null;
-    if (prevReminderData?.date && reminderData.date && (formatDate(prevReminderData.date, 'yyyymmdd') == formatDate(reminderData.date, 'yyyymmdd'))) {
-        conClassList += ' noBorder';
-    }
-    let reminderHTML = document.createElement('div');
-    reminderHTML.className = conClassList;
-    reminderHTML.id = `reminder${reminderData.id}`;
+
     reminderHTML.innerHTML = `
         ${reminderDateHTML}
         ${reminderTitleHTML}
@@ -279,11 +292,10 @@ function addNewReminder(reminderData) {
 }
 // deletes a reminder from the dom and global data
 function deleteReminder(reminderId) {
-    // delete from dom
-    document.getElementById(`reminder${reminderId}`).remove();
-
     // delete from global data
     deleteData('reminder', reminderId);
+
+    refreshReminders();
 }
 
 // ===============
@@ -291,7 +303,7 @@ function deleteReminder(reminderId) {
 // ===============
 
 document.addEventListener('contextmenu', event => {
-    if ([event.target.className, event.target.parentElement.className].includes('reminderCon')) {
+    if (event.target.className.includes('reminderCon') || event.target.parentElement.className.includes('reminderCon')) {
         event.preventDefault();
 
         let targetId = event.target.id || event.target.parentElement.id;
