@@ -269,11 +269,11 @@ Reminders
     padding: 5px 0;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid lightgrey;
+    border-top: 1px solid lightgrey;
     font-size: 0.9em;
 }
-.reminderCon:last-child {
-    border-bottom: none;
+.reminderCon:first-child {
+    border-top: none;
 }
 .reminderCon:hover {
     background-color: rgb(243, 243, 243);
@@ -296,4 +296,7 @@ Reminders
 }
 .infinity::before {
     content: '\221E';
+}
+.noBorder {
+    border-top: none !important;
 }

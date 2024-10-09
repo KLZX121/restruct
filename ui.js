@@ -238,25 +238,32 @@ function addNewReminder(reminderData) {
     // format date
     let dateStr = formatSmartDateTime(reminderData.date, reminderData.isFullDay);
 
-    let dateColor = '';
+    let dateClassList = '';
     const timeDifference = reminderData.date?.getTime() - (new Date()).getTime();
     const isToday = reminderData.date ? formatDate(reminderData.date, 'yyyymmdd') == formatDate(new Date(), 'yyyymmdd') : false;
 
     if (timeDifference < 0) {
-        dateColor = (isToday && reminderData.isFullDay) ? 'dodgerblue' : 'crimson';
+        dateClassList += (isToday && reminderData.isFullDay) ? 'dodgerblue' : 'crimson';
     } else if (isToday) {
-        dateColor = 'dodgerblue';
+        dateClassList += 'dodgerblue';
     }
 
-    let infinitySymbol = dateStr ? '' : 'infinity';
+    dateClassList += dateStr ? '' : ' infinity';
 
-    // generate html
-    let reminderDateHTML = `<span class="reminderTime ${dateColor} ${infinitySymbol}">${dateStr}</span>`;
+    // generate children html
+    let reminderDateHTML = `<span class="reminderTime ${dateClassList}">${dateStr}</span>`;
     let reminderTitleHTML = `<span class="reminderTitle">${reminderData.name}</span>`;
     let reminderMenuHTML = `<span class="menuIcon" id="menuR${reminderData.id}"><div></div><div></div><div></div></span>`;
     
+    // generate parent html
+    // merge reminders on similar day
+    let conClassList = 'reminderCon';
+    const prevReminderData = reminderInputCon.lastChild ? retrieveData('reminder', extractId(reminderInputCon.lastChild.id)) : null;
+    if (prevReminderData?.date && reminderData.date && (formatDate(prevReminderData.date, 'yyyymmdd') == formatDate(reminderData.date, 'yyyymmdd'))) {
+        conClassList += ' noBorder';
+    }
     let reminderHTML = document.createElement('div');
-    reminderHTML.className = 'reminderCon';
+    reminderHTML.className = conClassList;
     reminderHTML.id = `reminder${reminderData.id}`;
     reminderHTML.innerHTML = `
         ${reminderDateHTML}
