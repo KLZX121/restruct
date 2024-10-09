@@ -180,15 +180,20 @@ Body
     width: 40%;
     padding: 10px;
     margin-bottom: 50px;
-    height: 250px;
     position: relative;
+}
+.bodyConHead {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
 }
 .inputCon {
     border: 1px solid rgb(158, 158, 158);
     padding: 5px;
     margin-top: 5px;
     box-sizing: border-box;
-    height: 100%
+    height: 300px;
 }
 .inputElement {
     outline: none;
@@ -210,10 +215,6 @@ Body
 }
 
 .newBtn {
-    position: absolute;
-    right: 2%;
-    top: 5%;
-
     border: 1px solid grey;
     border-radius: 5px;
     width: 15px;
