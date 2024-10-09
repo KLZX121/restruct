@@ -84,6 +84,22 @@ function generateReminderData(id) {
     }
     return data;
 }
+// extracts the number id from an element id
+function extractId(elementId) {
+    const idLength = elementId.length;
+
+    let id = '';
+        
+    for (let i = 1; i <= idLength; i++) {
+        if (isNaN(elementId.slice(-i))) {
+            id = elementId.slice(idLength - i + 1);
+            break;
+        } 
+    }
+    id = parseInt(id);
+
+    return id;
+}
 
 // ===============
 // LIVE TIME
@@ -190,7 +206,6 @@ newReminderBtn.addEventListener('click', () => togglePopup(true, 0));
 
 function editReminder(data) {
     document.getElementById(`reminder${data.id}`).remove();
-    addNewReminder(data);
     refreshReminders();
 }
 // sorts reminders by date from closest to furthest
@@ -213,6 +228,7 @@ function refreshReminders() {
 }
 // adds a reminder to the dom (does not change global data)
 function addNewReminder(reminderData) {
+    // format date
     let dateStr = formatSmartDateTime(reminderData.date, reminderData.isFullDay);
 
     let dateColor = '';
@@ -227,7 +243,8 @@ function addNewReminder(reminderData) {
 
     let infinitySymbol = dateStr ? '' : 'infinity';
 
-    let reminderTimeHTML = `<span class="reminderTime ${dateColor} ${infinitySymbol}">${dateStr}</span>`;
+    // generate html
+    let reminderDateHTML = `<span class="reminderTime ${dateColor} ${infinitySymbol}">${dateStr}</span>`;
     let reminderTitleHTML = `<span class="reminderTitle">${reminderData.name}</span>`;
     let reminderMenuHTML = `<span class="menuIcon" id="menuR${reminderData.id}"><div></div><div></div><div></div></span>`;
     
@@ -235,7 +252,7 @@ function addNewReminder(reminderData) {
     reminderHTML.className = 'reminderCon';
     reminderHTML.id = `reminder${reminderData.id}`;
     reminderHTML.innerHTML = `
-        ${reminderTimeHTML}
+        ${reminderDateHTML}
         ${reminderTitleHTML}
         ${reminderMenuHTML}
     `;
@@ -263,23 +280,14 @@ document.addEventListener('contextmenu', event => {
     if ([event.target.className, event.target.parentElement.className].includes('reminderCon')) {
         event.preventDefault();
 
-        // extract id
         let targetId = event.target.id || event.target.parentElement.id;
-        let id = '';
-        
-        for (let i = 1; i <= targetId.length; i++) {
-            if (isNaN(targetId.slice(-i))) {
-                id = targetId.slice(targetId.length - i + 1);
-                break;
-            } 
-        }
-        id = parseInt(id);
+        let id = extractId(targetId);
         
         menuClick(event, id);
     }
 });
 
-function menuClick(event, reminderId) {
+function menuClick(event, id) {
     // show menu
     itemMenu.style.left = event.clientX + 10;
     itemMenu.style.top = event.clientY + 10;
@@ -289,10 +297,10 @@ function menuClick(event, reminderId) {
         itemMenu.style.display = 'none';
 
         if (event.target == menuOptionEdit) {
-            itemId.textContent = reminderId;
-            togglePopup(true, 1, retrieveData('reminder', reminderId));
+            itemId.textContent = id;
+            togglePopup(true, 1, retrieveData('reminder', id));
         } else if (event.target == menuOptionDelete) {
-            deleteReminder(reminderId);
+            deleteReminder(id);
         }
     }, { once: true });
 }
@@ -375,9 +383,6 @@ function submitPopup() {
             // update global data
             globalData.remindersN++;
             globalData.reminders.push(reminderData);
-            
-            // add to dom
-            addNewReminder(reminderData);
 
             refreshReminders();
             
