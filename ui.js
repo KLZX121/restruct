@@ -13,7 +13,7 @@ let globalData = {
     remindersN: 0
 }
 
-globalData = parseGlobalData('{"reminders":[{"id":7,"name":"ages ago","date":"2023-12-31T13:00:00.000Z","isFullDay":true},{"id":3,"name":"yesterday","date":"2024-10-05T14:00:00.000Z","isFullDay":true},{"id":1,"name":"today full","date":"2024-10-06T13:00:00.000Z","isFullDay":true},{"id":2,"name":"today timed","date":"2024-10-07T09:06:38.563Z","isFullDay":false},{"id":0,"name":"long 1","date":null,"isFullDay":false},{"id":4,"name":"tomorrow","date":"2024-10-07T13:00:00.000Z","isFullDay":true},{"id":5,"name":"wednesday timed","date":"2024-10-09T09:07:00.000Z","isFullDay":false},{"id":6,"name":"long way away timed","date":"2024-10-24T23:07:00.000Z","isFullDay":false}],"remindersN":8}');
+globalData = parseGlobalData('{"reminders":[{"id":7,"name":"ages ago","date":"2023-12-30T13:00:00.000Z","isFullDay":true},{"id":3,"name":"yesterday","date":"2024-10-07T13:00:00.000Z","isFullDay":true},{"id":1,"name":"today full","date":"2024-10-08T13:00:00.000Z","isFullDay":true},{"id":2,"name":"today timed","date":"2024-10-09T12:12:00.000Z","isFullDay":false},{"id":0,"name":"inf","date":null,"isFullDay":false},{"id":5,"name":"tomorrow timed","date":"2024-10-10T09:07:00.000Z","isFullDay":false},{"id":8,"name":"saturday timed","date":"2024-10-12T11:58:00.000Z","isFullDay":false},{"id":6,"name":"long way away timed","date":"2024-10-24T23:07:00.000Z","isFullDay":false},{"id":4,"name":"next  year","date":"2024-12-31T13:00:00.000Z","isFullDay":true}],"remindersN":9}');
 refreshReminders();
 
 // parse globalData from stringified JSON
@@ -129,11 +129,12 @@ function formatTime(date) {
 
     return `${hours}:${minutes}`;
 }
-function formatDate(date, format) {
+// formats a date using the given format (replace yyyy with year, mm with month and dd with day)
+function formatDate(date, format, doLeadingZeroes = true) {
     let day = date.getDate();
-    day = (day < 10 ? '0' : '') + day;
+    if (doLeadingZeroes) day = (day < 10 ? '0' : '') + day;
     let month = date.getMonth() + 1;
-    month = (month < 10 ? '0' : '') + month;
+    if (doLeadingZeroes) month = (month < 10 ? '0' : '') + month;
     let year = date.getFullYear();
 
     dateString = format.replace('dd', day).replace('mm', month).replace('yyyy', year);
@@ -150,17 +151,23 @@ function formatSmartDateTime(date, isFullDay) {
         // generate day
         if (!yearDiff && !monthDiff && !dayDiff) {
             dateStr = 'Today';
+        } else if (!yearDiff && !monthDiff && dayDiff == -1) {
+            dateStr = 'Yesterday';
         } else if (!yearDiff && !monthDiff && dayDiff == 1) {
             dateStr = 'Tomorrow';
         } else if (!yearDiff && !monthDiff && dayDiff < 7 && dayDiff > 0) {
             dateStr =  ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
         } else {
-            dateStr = formatDate(date, 'dd/mm/yyyy');
-        }
+            dateStr = formatDate(date, `dd/mm${yearDiff ? '/yyyy' : ''}`, false);
+        } 
 
         // generate time
         if (!isFullDay && !dateStr.includes('/')) {
-            dateStr += ' ' + formatTime(date);
+            if (dateStr == 'Today') {
+                dateStr = formatTime(date);
+            } else {
+                dateStr += ' ' + formatTime(date);
+            }
         }
     }
 
@@ -233,7 +240,7 @@ function addNewReminder(reminderData) {
 
     let dateColor = '';
     const timeDifference = reminderData.date?.getTime() - (new Date()).getTime();
-    const isToday = dateStr.includes('Today');
+    const isToday = reminderData.date ? formatDate(reminderData.date, 'yyyymmdd') == formatDate(new Date(), 'yyyymmdd') : false;
 
     if (timeDifference < 0) {
         dateColor = (isToday && reminderData.isFullDay) ? 'dodgerblue' : 'crimson';
