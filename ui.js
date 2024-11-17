@@ -116,7 +116,7 @@ function extractId(elementId) {
     let day = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][currentTime.getDay()];
     dayDisp.textContent = day;
 
-    date.textContent = formatDate(currentTime, 'dd/mm/yyyy');
+    date.textContent = formatDate(currentTime, 'd/m/y');
 
     let msToNextDay = (((24 - currentTime.getHours()) * 60) - currentTime.getMinutes()) * 1000 * 60;
     setTimeout(updateDate, msToNextDay);
@@ -129,22 +129,24 @@ function formatTime(date) {
 
     return `${hours}:${minutes}`;
 }
-// formats a date using the given format (replace yyyy with year, mm with month and dd with day)
+// formats a date using the given format (replace y with year, m with month number, n with month string, and d with day)
 function formatDate(date, format, doLeadingZeroes = true) {
     let day = date.getDate();
     if (doLeadingZeroes) day = (day < 10 ? '0' : '') + day;
-    let month = date.getMonth() + 1;
-    if (doLeadingZeroes) month = (month < 10 ? '0' : '') + month;
+    let monthNum = date.getMonth() + 1;
+    let monthStr = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][monthNum - 1];
+    if (doLeadingZeroes) monthNum = (monthNum < 10 ? '0' : '') + monthNum;
     let year = date.getFullYear();
 
-    dateString = format.replace('dd', day).replace('mm', month).replace('yyyy', year);
+    dateString = format.replace('d', day).replace('m', monthNum).replace('n', monthStr).replace('y', year);
     return dateString;
 }
 function formatSmartDateTime(date, isFullDay, isMerged) {
     let dateStr = ''
     const currentTime = new Date();
     if (date) {
-        let dayDiff = date.getDate() - currentTime.getDate();
+        let dateDay = date.getDate();
+        let dayDiff = dateDay - currentTime.getDate();
         let monthDiff = Math.abs(date.getMonth() - currentTime.getMonth());
         let yearDiff = Math.abs(date.getFullYear() - currentTime.getFullYear());
 
@@ -159,7 +161,8 @@ function formatSmartDateTime(date, isFullDay, isMerged) {
             } else if (!yearDiff && !monthDiff && dayDiff < 7 && dayDiff > 0) {
                 dateStr =  ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
             } else {
-                dateStr = formatDate(date, `dd/mm${yearDiff ? '/yyyy' : ''}`, false);
+                daySuff = [1, 21, 31].includes(dateDay) ? 'st' : [2, 22].includes(dateDay) ? 'nd' : [3, 23].includes(dateDay) ? 'rd' : 'th';
+                dateStr = formatDate(date, `d${daySuff} n ${yearDiff ? 'y' : ''}`, false);
             }
         }
 
@@ -168,7 +171,7 @@ function formatSmartDateTime(date, isFullDay, isMerged) {
             if (dateStr == 'Today') {
                 dateStr = formatTime(date);
             } else {
-                dateStr += ' ' + formatTime(date);
+                dateStr += formatTime(date);
             }
         }
     } else {
@@ -248,7 +251,7 @@ function addNewReminder(reminderData) {
     let isMerged = false;
     if (
         (prevReminderData?.date == null && reminderData.date == null) ||
-        (prevReminderData?.date && reminderData.date && (formatDate(prevReminderData.date, 'yyyymmdd') == formatDate(reminderData.date, 'yyyymmdd')))
+        (prevReminderData?.date && reminderData.date && (formatDate(prevReminderData.date, 'ymd') == formatDate(reminderData.date, 'ymd')))
     ) {
         conClassList += ' mergedReminder';
         isMerged = true;
@@ -263,7 +266,7 @@ function addNewReminder(reminderData) {
 
     let dateClassList = '';
     const timeDifference = reminderData.date?.getTime() - (new Date()).getTime();
-    const isToday = reminderData.date ? formatDate(reminderData.date, 'yyyymmdd') == formatDate(new Date(), 'yyyymmdd') : false;
+    const isToday = reminderData.date ? formatDate(reminderData.date, 'ymd') == formatDate(new Date(), 'ymd') : false;
 
     if (timeDifference < 0) {
         dateClassList += (isToday && reminderData.isFullDay) ? 'dodgerblue' : 'crimson';
@@ -386,7 +389,7 @@ function togglePopup(show, settingType, data) {
         if (data.date) {
             enableDateInput.checked = true;
             dateInput.disabled = false;
-            dateInput.value = formatDate(data.date, 'yyyy-mm-dd');
+            dateInput.value = formatDate(data.date, 'y-m-d');
         }
         if (data.date && !data.isFullDay) {
             enableTimeInput.checked = true;
