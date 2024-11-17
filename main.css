@@ -10,6 +10,7 @@
 body {
     font-family: 'Open Sans', sans-serif;
     color: rgb(51, 51, 51);
+    margin: 0;
 }
 
 input {
@@ -33,13 +34,16 @@ Titlebar
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid lightgray;
-    padding-bottom: 5px;
+    padding: 10px 5px;
+    background: linear-gradient(to right, rgb(64, 159, 255), rgb(0, 242, 254));
+    border-radius: 0 0 10px 10px;
+    background-blend-mode: screen;
 }
 .titleBar {
     width: 30%;
     padding: 0 10px;
     font-size: smaller;
+    color: #003366;
 }
 #pageTitle {
     text-align: center;
@@ -57,6 +61,31 @@ Titlebar
     display: inline-flex;
     flex-direction: column;
     align-items: center;
+}
+
+/* 
+===============
+Page menu
+===============
+*/
+#pageMenuSec {
+    position: absolute;
+    left: 10%;
+}
+.pageMenuBtn {
+    font-family: 'Space Mono', monospace;
+    padding: 0 5px;
+    font-size: 0.85em;
+    margin-right: 5px;
+    outline: none;
+    color: #000080;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    border: 2px solid transparent;
+}
+.pageMenuBtn:hover {
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    cursor: pointer;
 }
 
 /* 
@@ -174,7 +203,7 @@ Body
     display: flex;
     flex-wrap: wrap;
     justify-content: space-evenly;
-    padding-top: 50px;
+    padding-top: 20px;
 }
 .bodyCon {
     width: 40%;
@@ -188,8 +217,16 @@ Body
     justify-content: space-between;
     align-items: center;
 }
+.subTitle {
+    font-size: 1.1em;
+}
 .inputCon {
-    border: 1px solid rgb(158, 158, 158);
+    background: 
+        linear-gradient(#fff 0 0) padding-box,
+        linear-gradient(90deg, #4facfe, #00f2fe) border-box;
+    background-attachment: fixed;
+    border: 5px solid transparent;
+    border-radius: 4px;
     padding: 5px;
     margin-top: 5px;
     box-sizing: border-box;
