@@ -84,22 +84,6 @@ function generateReminderData(id) {
     }
     return data;
 }
-// extracts the number id from an element id
-function extractId(elementId) {
-    const idLength = elementId.length;
-
-    let id = '';
-        
-    for (let i = 1; i <= idLength; i++) {
-        if (isNaN(elementId.slice(-i))) {
-            id = elementId.slice(idLength - i + 1);
-            break;
-        } 
-    }
-    id = parseInt(id);
-
-    return id;
-}
 
 // ===============
 // LIVE TIME
@@ -218,9 +202,8 @@ quickNotesInput.addEventListener('keyup', event => {
 
 newReminderBtn.addEventListener('click', () => togglePopup(true, 0));
 
-function editReminder(data) {
-    document.getElementById(`reminder${data.id}`).remove();
-    refreshReminders();
+function delReminderDom(data) {
+    document.querySelector(`.reminderCon[data-id="${data.id}"]`).remove();
 }
 // sorts reminders by date from closest to furthest
 // also fully updates reminders in dom
@@ -247,7 +230,7 @@ function addNewReminder(reminderData) {
 
     // merge reminders on same day
     let conClassList = 'reminderCon';
-    const prevReminderData = reminderInputCon.lastChild ? retrieveData('reminder', extractId(reminderInputCon.lastChild.id)) : null;
+    const prevReminderData = reminderInputCon.lastChild ? retrieveData('reminder', parseInt(reminderInputCon.lastChild.getAttribute('data-id'))) : null;
     let isMerged = false;
     if (
         (prevReminderData?.date == null && reminderData.date == null) ||
@@ -257,7 +240,7 @@ function addNewReminder(reminderData) {
         isMerged = true;
     }
     reminderHTML.className = conClassList;
-    reminderHTML.id = `reminder${reminderData.id}`;
+    reminderHTML.setAttribute('data-id', reminderData.id);
 
 
     // generate children html
@@ -278,7 +261,7 @@ function addNewReminder(reminderData) {
 
     let reminderDateHTML = `<span class="reminderTime ${dateClassList}">${dateStr == 'inf' ? '' : dateStr}</span>`;
     let reminderTitleHTML = `<span class="reminderTitle">${reminderData.name}</span>`;
-    let reminderMenuHTML = `<span class="menuIcon" id="menuR${reminderData.id}"><div></div><div></div><div></div></span>`;
+    let reminderMenuHTML = `<span class="menuIcon" data-id="${reminderData.id}"><div></div><div></div><div></div></span>`;
     
 
     reminderHTML.innerHTML = `
@@ -289,7 +272,7 @@ function addNewReminder(reminderData) {
 
     reminderInputCon.appendChild(reminderHTML);
 
-    document.getElementById(`menuR${reminderData.id}`).addEventListener('click', event => {
+    document.querySelector(`.menuIcon[data-id="${reminderData.id}"]`).addEventListener('click', event => {
         menuClick(event, reminderData.id);
     });
 }
@@ -306,14 +289,19 @@ function deleteReminder(reminderId) {
 // ===============
 
 document.addEventListener('contextmenu', event => {
-    if (event.target.className.includes('reminderCon') || event.target.parentElement.className.includes('reminderCon')) {
-        event.preventDefault();
-
-        let targetId = event.target.id || event.target.parentElement.id;
-        let id = extractId(targetId);
-        
-        menuClick(event, id);
+    let target;
+    if (event.target.className.includes('reminderCon')) {
+        target = event.target;
+    } else if (event.target.parentElement.className.includes('reminderCon')) {
+        target = event.target.parentElement;
+    } else {
+        return;
     }
+    event.preventDefault();
+
+    let id = parseInt(target.getAttribute('data-id'));
+
+    menuClick(event, id);
 });
 
 function menuClick(event, id) {
@@ -436,8 +424,8 @@ function submitPopup() {
                 }
             }
 
-            // edit dom
-            editReminder(data);
+            // delete reminder from dom
+            delReminderDom(data);
 
             refreshReminders();
 

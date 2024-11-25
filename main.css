@@ -325,6 +325,7 @@ Reminders
     font-size: 0.8em;
     color: grey;
     overflow: hidden;
+    cursor: default
 }
 .reminderTitle {
     width: 75%;
