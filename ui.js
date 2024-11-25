@@ -13,7 +13,7 @@ openDb(() => {
 });
 
 // generate a reminder data object from the form
-function generateReminderData() {
+function generateReminderData(id = 0) {
     let date;
     let isFullDay = false;
     if (enableDateInput.checked) {
@@ -34,6 +34,11 @@ function generateReminderData() {
         name: nameInput.value,
         date,
         isFullDay
+    }
+
+    // enter id if edit operation
+    if (id) {
+        data.id = id;
     }
 
     addEditData('reminders', data);
@@ -392,7 +397,7 @@ function submitPopup() {
             delReminderDom(id);
 
             // submit form data
-            generateReminderData();
+            generateReminderData(id);
 
             refreshReminders();
 
