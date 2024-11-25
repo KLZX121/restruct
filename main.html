@@ -7,6 +7,7 @@
         <div class="titleBar" id="version">Restruct v0.1</div>
         <section id="pageMenuSec">
                 <button class="pageMenuBtn">Save Data</button>
+                <button class="pageMenuBtn">Import Data</button>
                 <button class="pageMenuBtn">Export Data</button>
         </section>
         <div class="titleBar" id="pageTitle">Dashboard</div>
@@ -35,7 +36,9 @@
 
 
         <div class="bodyCon" id="quickNotesDiv">
-            <span class="subTitle">Quick Notes</span>
+            <div class="bodyConHead">
+                <span class="subTitle">Quick Notes</span>
+            </div>
             <div class="inputCon">
                 <textarea class="inputElement" id="quickNotesInput" spellcheck="false" placeholder="Tippy Tappy..."></textarea>
             </div>
@@ -53,7 +56,10 @@
 
 
         <div class="bodyCon">
-            <span class="subTitle">Placeholder</span>
+            <div class="bodyConHead">
+                <span class="subTitle">Goals</span>
+                <div class="newBtn" id="newGoalBtn"><div></div><div></div></div>
+            </div>
             <div class="inputCon"></div>
         </div>
     </section>
@@ -98,5 +104,6 @@
 
 
     <script src="ui.js"></script>
+    <script src="db.js"></script>
 </body>
 </html>

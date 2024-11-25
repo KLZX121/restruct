@@ -36,7 +36,6 @@ Titlebar
     align-items: center;
     padding: 10px 5px;
     background: linear-gradient(to right, rgb(64, 159, 255), rgb(0, 242, 254));
-    border-radius: 0 0 10px 10px;
     background-blend-mode: screen;
 }
 .titleBar {
@@ -75,7 +74,7 @@ Page menu
 .pageMenuBtn {
     font-family: 'Space Mono', monospace;
     padding: 0 5px;
-    font-size: 0.85em;
+    font-size: 0.8em;
     margin-right: 5px;
     outline: none;
     color: #000080;
@@ -218,17 +217,21 @@ Body
     align-items: center;
 }
 .subTitle {
+    color: navy;
     font-size: 1.1em;
+    padding: 3 6px 0 6px;
+    background: linear-gradient(to right, rgb(64, 159, 255), rgb(0, 242, 254));
+    background-attachment: fixed;
+    border-radius: 4px 4px 0px 0px;
 }
 .inputCon {
     background: 
         linear-gradient(#fff 0 0) padding-box,
-        linear-gradient(90deg, #4facfe, #00f2fe) border-box;
+        linear-gradient(to right, rgb(64, 159, 255), rgb(0, 242, 254)) border-box;
     background-attachment: fixed;
     border: 5px solid transparent;
-    border-radius: 4px;
+    border-radius: 0px 4px 4px 4px;
     padding: 5px;
-    margin-top: 5px;
     box-sizing: border-box;
     height: 300px;
 }
