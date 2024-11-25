@@ -1,6 +1,6 @@
 let db;
 
-function openDb() {
+function openDb(callback) {
 	const openRequest = window.indexedDB.open("restruct_db", 1);
 
 	openRequest.addEventListener("error", () => console.error("Database failed to open"));
@@ -9,6 +9,8 @@ function openDb() {
 		console.log("Database opened successfully");
 
 		db = openRequest.result;
+
+		callback();
 	});
 
 	openRequest.addEventListener("upgradeneeded", e => {
@@ -16,7 +18,6 @@ function openDb() {
 
 		// reminders table
 		const objectStore = db.createObjectStore("reminders", {keyPath: "id", autoIncrement: true});
-
 		objectStore.createIndex("name", "name");
 		objectStore.createIndex("date", "date");
 		objectStore.createIndex("isFullDay", "isFullDay");
@@ -25,18 +26,16 @@ function openDb() {
 	});
 }
 
-// adds or edits multiple entries
-function addEditData(objectStore, dataArray) {
+// adds or edits one entry
+function addEditData(objectStore, data) {
 	const transaction = db.transaction(objectStore, "readwrite")
 	const os = transaction.objectStore(objectStore);
 
-	dataArray.forEach(data => {
-		const putReq = os.put(data);
-		
-		putReq.addEventListener("success", e => {
-			const dataId = e.target.result;
-			console.log(dataId);
-		});
+	const putReq = os.put(data);
+	
+	putReq.addEventListener("success", e => {
+		const dataId = e.target.result;
+		console.log(dataId);
 	});
 
 	transaction.addEventListener("complete", () => {
@@ -71,27 +70,29 @@ function deleteAllData(objectStore) {
 
 // gets an individual entry
 function getData(objectStore, id) {
-	const transaction = db.transaction(objectStore);
-	const os = transaction.objectStore(objectStore);
-
-	const getReq = os.get(id);
-
-	getReq.onsuccess = e => {
-		console.log(getReq.result);
-	}
-
-	getReq.onerror = e => {
-		console.log(e);
-	}
+	return new Promise((resolve, reject) => {		
+		const transaction = db.transaction(objectStore);
+		const os = transaction.objectStore(objectStore);
+	
+		const getReq = os.get(id);
+	
+		getReq.onsuccess = () => {
+			resolve(getReq.result);
+		}
+	
+		getReq.onerror = e => {
+			reject(e);
+		}
+	});
 }
 
 // returns array of all data values
 function getAllData(objectStore) {
-	const os = db.transaction(objectStore).objectStore(objectStore);
-
-	os.getAll().onsuccess = e => {
-		console.log(e.target.result);
-	}
+	return new Promise((resolve, reject) => {
+		const os = db.transaction(objectStore).objectStore(objectStore);
+		
+		os.getAll().onsuccess = e => resolve(e.target.result);
+	});
 }
 
 // iterates through object store individually

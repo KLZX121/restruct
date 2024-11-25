@@ -8,58 +8,12 @@
 // DATA MANAGEMENT
 // ===============
 
-let globalData = {
-    reminders: [],
-    remindersN: 0
-}
+openDb(() => {
+    refreshReminders()
+});
 
-globalData = parseGlobalData('{"reminders":[{"id":7,"name":"ages ago","date":"2023-12-30T13:00:00.000Z","isFullDay":true},{"id":3,"name":"yesterday","date":"2024-10-07T13:00:00.000Z","isFullDay":true},{"id":1,"name":"today full","date":"2024-10-08T13:00:00.000Z","isFullDay":true},{"id":2,"name":"today timed","date":"2024-10-09T12:12:00.000Z","isFullDay":false},{"id":0,"name":"inf","date":null,"isFullDay":false},{"id":5,"name":"tomorrow timed","date":"2024-10-10T09:07:00.000Z","isFullDay":false},{"id":8,"name":"saturday timed","date":"2024-10-12T11:58:00.000Z","isFullDay":false},{"id":6,"name":"long way away timed","date":"2024-10-24T23:07:00.000Z","isFullDay":false},{"id":4,"name":"next  year","date":"2024-12-31T13:00:00.000Z","isFullDay":true}],"remindersN":9}');
-refreshReminders();
-
-// parse globalData from stringified JSON
-function parseGlobalData(stringData) {
-    data = JSON.parse(stringData);
-
-    // parse reminder dates
-    data.reminders.forEach((reminder, index) => {
-        if (reminder.date && !(reminder.date instanceof Date)) {
-            data.reminders[index].date = new Date(reminder.date);
-        }
-    });
-
-    return data;
-}
-
-// return a piece of data from globalData
-function retrieveData(dataType, dataId) {
-    switch (dataType) {
-        case 'reminder':
-            let output = null;
-            for (let i = 0; i < globalData.reminders.length; i++) {
-                const reminder = globalData.reminders[i];
-                if (reminder.id == dataId) {
-                    output = reminder;
-                    break;
-                }
-            }
-            return output;
-    }
-}
-// delete a piece of data from globalData
-function deleteData(dataType, dataId) {
-    switch (dataType) {
-        case 'reminder':
-            for (let i = 0; i < globalData.reminders.length; i++) {
-                const reminder = globalData.reminders[i];
-                if (reminder.id == dataId) {
-                    globalData.reminders.splice(i, 1);
-                    break;
-                }
-            }
-    }
-}
 // generate a reminder data object from the form
-function generateReminderData(id) {
+function generateReminderData() {
     let date;
     let isFullDay = false;
     if (enableDateInput.checked) {
@@ -77,11 +31,12 @@ function generateReminderData(id) {
     }
 
     let data = {
-        id,
         name: nameInput.value,
         date,
         isFullDay
     }
+
+    addEditData('reminders', data);
     return data;
 }
 
@@ -155,7 +110,7 @@ function formatSmartDateTime(date, isFullDay, isMerged) {
             if (dateStr == 'Today') {
                 dateStr = formatTime(date);
             } else {
-                dateStr += formatTime(date);
+                dateStr += ' ' + formatTime(date);
             }
         }
     } else {
@@ -200,48 +155,68 @@ quickNotesInput.addEventListener('keyup', event => {
 // REMINDERS
 // ===============
 
+clrRemBtn.addEventListener('click', () => {
+    if (confirm('Delete all reminders?')) {
+        deleteAllData('reminders');
+        refreshReminders();
+    }
+});
+
 newReminderBtn.addEventListener('click', () => togglePopup(true, 0));
 
-function delReminderDom(data) {
-    document.querySelector(`.reminderCon[data-id="${data.id}"]`).remove();
+function delReminderDom(id) {
+    document.querySelector(`.reminderCon[data-id="${id}"]`).remove();
 }
 // sorts reminders by date from closest to furthest
 // also fully updates reminders in dom
-function refreshReminders() {
+async function refreshReminders() {
+    let remindersData = await getAllData('reminders');
 
-    globalData.reminders.sort((a, b) => {
+    // if no reminders then display placeholder
+    if (!remindersData.length) {
+        reminderInputCon.innerHTML = `<span class="placeholder">No reminders yet...</span>`;
+
+        return;
+    }
+
+    // sort reminders
+    remindersData.sort((a, b) => {
         let dateOne = a.date || new Date((new Date()).setHours(23, 59));
         let dateTwo = b.date || new Date((new Date()).setHours(23, 59));
         
         return dateOne.getTime() - dateTwo.getTime();
     });
 
-    // remove reminders from dom
+    // clear dom
     reminderInputCon.textContent = '';
+
     // re-add reminders to dom
-    globalData.reminders.forEach(reminder => {
-        addNewReminder(reminder);
-    });
+    for (const reminder of remindersData) {
+        await addNewReminderDom(reminder);
+    }
 }
 // adds a reminder to the dom (does not change global data)
-function addNewReminder(reminderData) {
+async function addNewReminderDom(reminderData) {
     // generate parent html
     let reminderHTML = document.createElement('div');
 
-    // merge reminders on same day
     let conClassList = 'reminderCon';
-    const prevReminderData = reminderInputCon.lastChild ? retrieveData('reminder', parseInt(reminderInputCon.lastChild.getAttribute('data-id'))) : null;
+    
+    // merge reminders on same day
     let isMerged = false;
-    if (
-        (prevReminderData?.date == null && reminderData.date == null) ||
-        (prevReminderData?.date && reminderData.date && (formatDate(prevReminderData.date, 'ymd') == formatDate(reminderData.date, 'ymd')))
-    ) {
-        conClassList += ' mergedReminder';
-        isMerged = true;
+    if (reminderInputCon.lastChild) {
+        const prevReminderData = await getData('reminders', parseInt(reminderInputCon.lastChild.getAttribute('data-id')));
+        if (
+            (prevReminderData.date == null && reminderData.date == null) ||
+            (prevReminderData.date && reminderData.date && (formatDate(prevReminderData.date, 'ymd') == formatDate(reminderData.date, 'ymd')))
+        ) {
+            conClassList += ' mergedReminder';
+            isMerged = true;
+        }
     }
+    
     reminderHTML.className = conClassList;
     reminderHTML.setAttribute('data-id', reminderData.id);
-
 
     // generate children html
     // format date
@@ -254,21 +229,26 @@ function addNewReminder(reminderData) {
     if (timeDifference < 0) {
         dateClassList += (isToday && reminderData.isFullDay) ? 'dodgerblue' : 'crimson';
     } else if (isToday) {
-        dateClassList += 'dodgerblue';
+        dateClassList += 'dodgerblue ';
     }
 
-    dateClassList += (dateStr == 'inf' && !isMerged) ? ' infinity' : '';
+    dateClassList += (dateStr == 'inf' && !isMerged) ? 'infinity' : '';
 
-    let reminderDateHTML = `<span class="reminderTime ${dateClassList}">${dateStr == 'inf' ? '' : dateStr}</span>`;
-    let reminderTitleHTML = `<span class="reminderTitle">${reminderData.name}</span>`;
-    let reminderMenuHTML = `<span class="menuIcon" data-id="${reminderData.id}"><div></div><div></div><div></div></span>`;
+    let dateSpan = document.createElement('span');
+    dateSpan.className = 'reminderTime ' + dateClassList;
+    dateSpan.textContent = dateStr == 'inf' ? '' : dateStr;
+    reminderHTML.appendChild(dateSpan);
     
+    let titleSpan = document.createElement('span');
+    titleSpan.className = 'reminderTitle';
+    titleSpan.textContent = reminderData.name;
+    reminderHTML.appendChild(titleSpan);
 
-    reminderHTML.innerHTML = `
-        ${reminderDateHTML}
-        ${reminderTitleHTML}
-        ${reminderMenuHTML}
-    `;
+    let menuSpan = document.createElement('span');
+    menuSpan.className = 'menuIcon';
+    menuSpan.setAttribute('data-id', reminderData.id);
+    menuSpan.innerHTML = `<div></div><div></div><div></div>`;
+    reminderHTML.appendChild(menuSpan);
 
     reminderInputCon.appendChild(reminderHTML);
 
@@ -279,7 +259,7 @@ function addNewReminder(reminderData) {
 // deletes a reminder from the dom and global data
 function deleteReminder(reminderId) {
     // delete from global data
-    deleteData('reminder', reminderId);
+    deleteData('reminders', reminderId);
 
     refreshReminders();
 }
@@ -310,12 +290,12 @@ function menuClick(event, id) {
     itemMenu.style.top = event.clientY + 10;
     itemMenu.style.display = 'flex';
     
-    document.addEventListener('mousedown', event => {
+    document.addEventListener('mousedown', async event => {
         itemMenu.style.display = 'none';
 
         if (event.target == menuOptionEdit) {
             itemId.textContent = id;
-            togglePopup(true, 1, retrieveData('reminder', id));
+            togglePopup(true, 1, await getData('reminders', id));
         } else if (event.target == menuOptionDelete) {
             deleteReminder(id);
         }
@@ -395,11 +375,7 @@ function submitPopup() {
             if (!checkInputs()) break;
 
             // get data from form
-            let reminderData = generateReminderData(globalData.remindersN);
-            
-            // update global data
-            globalData.remindersN++;
-            globalData.reminders.push(reminderData);
+            generateReminderData();
 
             refreshReminders();
             
@@ -412,20 +388,11 @@ function submitPopup() {
 
             if (!checkInputs()) break;
 
-            // get data from form
-            let data = generateReminderData(id);
-
-            // update global data
-            for (let i = 0; i < globalData.reminders.length; i++) {
-                const reminder = globalData.reminders[i];
-                if ((reminder.id) == id) {
-                    globalData.reminders[i] = data;
-                    break;
-                }
-            }
-
             // delete reminder from dom
-            delReminderDom(data);
+            delReminderDom(id);
+
+            // submit form data
+            generateReminderData();
 
             refreshReminders();
 

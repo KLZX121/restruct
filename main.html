@@ -6,7 +6,6 @@
     <section id="titleBarCon">
         <div class="titleBar" id="version">Restruct v0.1</div>
         <section id="pageMenuSec">
-                <button class="pageMenuBtn">Save Data</button>
                 <button class="pageMenuBtn">Import Data</button>
                 <button class="pageMenuBtn">Export Data</button>
         </section>
@@ -27,7 +26,10 @@
         <div class="bodyCon" id="remindersDiv">
             <div class="bodyConHead">
                 <span class="subTitle">Reminders</span>
-                <div class="newBtn" id="newReminderBtn"><div></div><div></div></div>
+                <div class="headOptions">
+                    <button class="clearBtn" id="clrRemBtn">Clear All</button>
+                    <div class="newBtn" id="newReminderBtn"><div></div><div></div></div>
+                </div>
             </div>
 
             <div class="inputCon" id="reminderInputCon"></div>
@@ -103,7 +105,7 @@
     </section>
 
 
+    <script src="db.js"></script>
     <script src="ui.js"></script>
-    <!-- <script src="db.js"></script> -->
 </body>
 </html>

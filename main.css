@@ -43,10 +43,12 @@ Titlebar
     padding: 0 10px;
     font-size: smaller;
     color: #003366;
+    font-family: 'Space Mono', monospace;
 }
 #pageTitle {
     text-align: center;
     font-size: 1.4em;
+    font-family: 'Open Sans', sans-serif;
 }
 #timeDiv {
     flex-direction: row-reverse;
@@ -198,6 +200,31 @@ Body
 ===============
 */
 
+.placeholder {
+    color: grey;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.9em;
+    cursor: default;
+}
+.headOptions {
+    display: flex;
+    align-items: center;
+}
+.clearBtn {
+    margin-right: 20px;
+    font-family: 'Space Mono', monospace;
+    padding: 0 5px;
+    font-size: 0.8em;
+    outline: none;
+    color: #cf0000;
+    border-radius: 4px;
+    background: none;
+    border: 2px solid transparent;
+}
+.clearBtn:hover {
+    cursor: pointer;
+    background: rgba(0, 0, 0, 0.08);
+}
 #bodySec {
     display: flex;
     flex-wrap: wrap;
