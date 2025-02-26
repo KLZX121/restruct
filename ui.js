@@ -127,7 +127,7 @@ function formatSmartDateTime(date, isFullDay, isMerged) {
 // ===============
 
 document.addEventListener('keyup', event => {
-    if (document.activeElement != document.body) return;
+    if (document.activeElement != document.body || event.ctrlKey) return;
     switch (event.key) {
         case 'r':
             newReminderBtn.click();
