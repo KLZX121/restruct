@@ -320,10 +320,12 @@ function deleteReminder(reminderId) {
 let autoSaveID = -1;
 
 quickNotesInput.addEventListener('input', () => {
+    quickNotesSavedSpan.style.display = 'none';
     clearTimeout(autoSaveID);
     autoSaveID = setTimeout(() => {
         saveQuickNotes(quickNotesInput.value);
 
+        quickNotesSavedSpan.style.display = 'inline';
         console.log('saved quick notes');
     }, 3000)
 })

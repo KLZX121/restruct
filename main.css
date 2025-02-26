@@ -322,6 +322,13 @@ Quick notes
     height: 100%;
 }
 
+#quickNotesSavedSpan {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8em;
+    margin-right: 1em;
+    color: forestgreen;
+}
+
 /* 
 ===============
 Reminders
