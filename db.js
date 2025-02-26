@@ -1,7 +1,7 @@
 let db;
 
 function openDb(callback) {
-	const openRequest = window.indexedDB.open("restruct_db", 1);
+	const openRequest = window.indexedDB.open("restruct_db", 2);
 
 	openRequest.addEventListener("error", () => console.error("Database failed to open"));
 
@@ -17,21 +17,33 @@ function openDb(callback) {
 		db = e.target.result;
 
 		// reminders table
-		const objectStore = db.createObjectStore("reminders", {keyPath: "id", autoIncrement: true});
-		objectStore.createIndex("name", "name");
-		objectStore.createIndex("date", "date");
-		objectStore.createIndex("isFullDay", "isFullDay");
+		if (!db.objectStoreNames.contains('reminders')) {
+			const reminderObjectStore = db.createObjectStore("reminders", {keyPath: "id", autoIncrement: true});
+			reminderObjectStore.createIndex("name", "name");
+			reminderObjectStore.createIndex("date", "date");
+			reminderObjectStore.createIndex("isFullDay", "isFullDay");
+		}
+
+		// quick notes table
+		if (!db.objectStoreNames.contains('quicknotes')) {
+			const quickNObjectStore = db.createObjectStore("quicknotes");
+		}
 
 		console.log("Database setup complete");
 	});
 }
 
 // adds or edits one entry
-function addEditData(objectStore, data) {
+function addEditData(objectStore, data, isSingleton) {
 	const transaction = db.transaction(objectStore, "readwrite")
 	const os = transaction.objectStore(objectStore);
 
-	const putReq = os.put(data);
+	let putReq;
+	if (isSingleton) {
+		putReq = os.put(data, 'singleton');
+	} else {
+		putReq = os.put(data);
+	}
 	
 	putReq.addEventListener("success", e => {
 		const dataId = e.target.result;
@@ -69,6 +81,7 @@ function deleteAllData(objectStore) {
 }
 
 // gets an individual entry
+// id = 'singleton' for single entries
 function getData(objectStore, id) {
 	return new Promise((resolve, reject) => {		
 		const transaction = db.transaction(objectStore);

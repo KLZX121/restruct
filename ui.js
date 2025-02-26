@@ -10,6 +10,7 @@
 
 openDb(() => {
     refreshReminders()
+    loadQuickNotes()
 });
 
 // generate a reminder data object from the form
@@ -309,6 +310,31 @@ function deleteReminder(reminderId) {
     deleteData('reminders', reminderId);
 
     refreshReminders();
+}
+
+// ===============
+// QUICK NOTES
+// ===============
+
+// auto save timer (3 seconds after last change)
+let autoSaveID = -1;
+
+quickNotesInput.addEventListener('input', () => {
+    clearTimeout(autoSaveID);
+    autoSaveID = setTimeout(() => {
+        saveQuickNotes(quickNotesInput.value);
+
+        console.log('saved quick notes');
+    }, 3000)
+})
+
+// gets data from database
+function loadQuickNotes() {
+    getData('quicknotes', 'singleton').then(data => quickNotesInput.value = data);
+}
+
+function saveQuickNotes(data) {
+    addEditData('quicknotes', data, true);
 }
 
 // ===============
