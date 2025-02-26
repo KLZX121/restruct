@@ -232,9 +232,9 @@ Body
     padding-top: 20px;
 }
 .bodyCon {
-    width: 40%;
+    width: 45%;
     padding: 10px;
-    margin-bottom: 50px;
+    margin-bottom: 20px;
     position: relative;
 }
 .bodyConHead {
@@ -344,15 +344,44 @@ Reminders
     border-top: none;
 }
 .reminderCon:hover {
-    background-color: rgb(243, 243, 243);
+    /*background-color: rgb(243, 243, 243);*/
+    background: linear-gradient(90deg, rgb(128, 191, 255), rgb(0, 242, 254), rgb(128, 191, 255));
+    background-size: 200% 200%;
+    animation: smoothGradientScroll 10s ease-in-out infinite;
+}
+@keyframes smoothGradientScroll {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+}
+.reminderDate {
+    margin-left: 10px;
+    text-align: left;
+    width: 14%;
+    font-size: 0.8em;
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
 }
 .reminderTime {
-    width: 20%;
+    width: 40px;
+    margin-right: 10px;
     text-align: center;
     font-size: 0.8em;
-    color: grey;
+    border-left: 0;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+.reminderDate, .reminderTime {
     overflow: hidden;
-    cursor: default
+    cursor: default;
+    padding: 5px;
+    color: grey;
 }
 .reminderTitle {
     width: 75%;
@@ -360,12 +389,10 @@ Reminders
     white-space: nowrap;
 }
 
-.infinity {
-    transform: scale(2);
+.timeless, .timed {
+    background-color: rgba(230,230,230, 0.5);
 }
-.infinity::before {
-    content: '\221E';
-}
+
 .mergedReminder {
     border-top: none !important;
 }

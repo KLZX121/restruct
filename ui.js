@@ -106,17 +106,14 @@ function formatSmartDateTime(date, isFullDay, isMerged) {
                 dateStr =  ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
             } else {
                 daySuff = [1, 21, 31].includes(dateDay) ? 'st' : [2, 22].includes(dateDay) ? 'nd' : [3, 23].includes(dateDay) ? 'rd' : 'th';
-                dateStr = formatDate(date, `d${daySuff} n ${yearDiff ? 'y' : ''}`, false);
+                dateStr = formatDate(date, `d${daySuff} n${yearDiff ? ' y' : ''}`, false);                
             }
         }
 
         // generate time
         if (!isFullDay && !dateStr.includes('/')) {
-            if (dateStr == 'Today') {
-                dateStr = formatTime(date);
-            } else {
-                dateStr += ' ' + formatTime(date);
-            }
+            dateStr += '-';
+            dateStr += formatTime(date);
         }
     } else {
         dateStr = 'inf';
@@ -186,8 +183,16 @@ async function refreshReminders() {
 
     // sort reminders
     remindersData.sort((a, b) => {
-        let dateOne = a.date || new Date((new Date()).setHours(23, 59));
-        let dateTwo = b.date || new Date((new Date()).setHours(23, 59));
+        let dateOne = a.date;
+        let dateTwo = b.date;
+
+        if (!dateOne && !dateTwo) {
+            return 0
+        } else if (!dateOne) {
+            return -1
+        } else if (!dateTwo) {
+            return 1
+        }
         
         return dateOne.getTime() - dateTwo.getTime();
     });
@@ -225,24 +230,56 @@ async function addNewReminderDom(reminderData) {
 
     // generate children html
     // format date
-    let dateStr = formatSmartDateTime(reminderData.date, reminderData.isFullDay, isMerged);
-
-    let dateClassList = '';
+    
     const timeDifference = reminderData.date?.getTime() - (new Date()).getTime();
     const isToday = reminderData.date ? formatDate(reminderData.date, 'ymd') == formatDate(new Date(), 'ymd') : false;
+    
+    let dateClassList = '';
+    let timeClassList = '';
 
     if (timeDifference < 0) {
-        dateClassList += (isToday && reminderData.isFullDay) ? 'dodgerblue' : 'crimson';
+        dateClassList += isToday ? ' dodgerblue' : ' crimson'
+        timeClassList += ' crimson';
     } else if (isToday) {
-        dateClassList += 'dodgerblue ';
+        dateClassList += ' dodgerblue';
+        timeClassList += ' dodgerblue';
+    }
+    
+    let dateStr = formatSmartDateTime(reminderData.date, reminderData.isFullDay, isMerged);
+    
+    let timedClass = '';
+    if (dateStr == 'inf') {
+        timedClass = ' timeless'
+    } else {
+        timedClass = ' timed'
     }
 
-    dateClassList += (dateStr == 'inf' && !isMerged) ? 'infinity' : '';
-
+    // split into day/time
+    let dateTimeArr = dateStr.split('-');
+    
     let dateSpan = document.createElement('span');
-    dateSpan.className = 'reminderTime ' + dateClassList;
-    dateSpan.textContent = dateStr == 'inf' ? '' : dateStr;
+    dateSpan.className = 'reminderDate' + dateClassList + timedClass;
+    
+    let timeSpan = document.createElement('span');
+    timeSpan.className = 'reminderTime' + timeClassList + timedClass;
+
+    if (dateTimeArr[0] == 'inf') {
+        dateSpan.innerHTML = '&nbsp;';
+        timeSpan.innerHTML = '&nbsp;';
+    } else if (dateTimeArr.length > 1){
+        if (dateTimeArr[0]) {
+            dateSpan.textContent = dateTimeArr[0]
+        } else {
+            dateSpan.innerHTML = '&nbsp;';
+        }
+        timeSpan.textContent = dateTimeArr[1];
+    } else {
+        dateSpan.textContent = dateTimeArr[0];
+        timeSpan.innerHTML = '&nbsp;';
+    }
+
     reminderHTML.appendChild(dateSpan);
+    reminderHTML.appendChild(timeSpan);
     
     let titleSpan = document.createElement('span');
     titleSpan.className = 'reminderTitle';
@@ -254,6 +291,11 @@ async function addNewReminderDom(reminderData) {
     menuSpan.setAttribute('data-id', reminderData.id);
     menuSpan.innerHTML = `<div></div><div></div><div></div>`;
     reminderHTML.appendChild(menuSpan);
+
+    reminderHTML.addEventListener('click', e => {
+        console.log(e.target);
+        
+    });
 
     reminderInputCon.appendChild(reminderHTML);
 
