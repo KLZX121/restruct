@@ -332,7 +332,7 @@ quickNotesInput.addEventListener('input', () => {
 
 // gets data from database
 function loadQuickNotes() {
-    getData('quicknotes', 'singleton').then(data => quickNotesInput.value = data);
+    getData('quicknotes', 'singleton').then(data => quickNotesInput.value = data || '');
 }
 
 function saveQuickNotes(data) {
