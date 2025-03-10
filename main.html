@@ -1,6 +1,9 @@
 <html>
 <head>
     <link rel="stylesheet" href="main.css">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 <body>
     <section id="titleBarCon">
@@ -80,28 +83,25 @@
         <div id="popupCon">
             <div class="subTitle" id="popupTitle"></div>
             <span id="itemId" style="display: none;"></span>
-            <span id="clearPopupBtn">Clear all</span>
 
             <div class="inputDiv">
-                <label for="nameInput" class="inputLabel">Name</label>
-                <input type="text" id="nameInput" name="nameInput" class="popupInput" placeholder="Max 50 characters" maxlength="50" spellcheck="false">
+                <input type="text" id="nameInput" name="nameInput" class="popupInput" placeholder="Name" maxlength="50" spellcheck="false">
             </div>
             <div class="inputDiv">
-                <input type="checkbox" class="inputToggle" id="enableDateInput">
-                <label for="dateInput" class="inputLabel">Date</label>
-                <input type="date" id="dateInput" name="dateInput" class="popupInput" disabled>
-            </div>
-            <div class="inputDiv">
-                <input type="checkbox" class="inputToggle" id="enableTimeInput">
-                <label for="timeInput" class="inputLabel">Time</label>
-                <input type="time" id="timeInput" name="timeInput" class="popupInput" disabled>
+                <div class="dateTimeInputOptCon">
+                    <button class="dateTimeInputOpt optBtnSelected" value="infinite" id="infDTOpt">Infinite</button>
+                    <button class="dateTimeInputOpt" value="date" id="dateDTOpt">Date</button>
+                    <button class="dateTimeInputOpt" value="datetime" id="dateTimeDTOpt">Date and Time</button>
+                </div>
+                <input type="datetime-local" id="dateTimeInput" class="popupInput" style="display: none;">
             </div>
 
             <div class="inputdiv">
                 <span id="popupError"></span>
             </div>
-            <div class="inputDiv">
-                <button id="submitPopupBtn">Done</button>
+            <div class="inputDiv" id="popupControlBtnsCon">
+                <button id="submitPopupBtn" class="popupCtrlBtns">Done</button>
+                <button id="clearPopupBtn" class="popupCtrlBtns">Clear all</button>
             </div>
 
         </div>

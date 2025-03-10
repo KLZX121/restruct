@@ -16,26 +16,19 @@ openDb(() => {
 
 // generate a reminder data object from the form
 function generateReminderData(id = 0) {
-    let date;
-    let isFullDay = false;
-    if (enableDateInput.checked) {
-        date = new Date(dateInput.value);
-    }  else {
-        date = new Date();
-    }
-    if (enableTimeInput.checked) {
-        date.setHours(timeInput.value.split(':')[0], timeInput.value.split(':')[1])
-    } else if (enableDateInput.checked) {
-        isFullDay = true;
-        date.setHours(0, 0);
-    } else {
-        date = null;
-    }
+    // retrieve selected date (infinite/date/datetime) from selected button
+    let dateType;
+    document.querySelectorAll('.dateTimeInputOpt').forEach(el => {
+        if (el.className.includes('optBtnSelected')) {
+            dateType = el.value;
+        }
+    })
 
+    // data object
     let data = {
         name: nameInput.value,
-        date,
-        isFullDay
+        dateType,
+        dateTime: fp.selectedDates[0]
     }
 
     // enter id if edit operation
@@ -90,35 +83,32 @@ function formatDate(date, format, doLeadingZeroes = true) {
 function formatSmartDateTime(date, isFullDay, isMerged) {
     let dateStr = ''
     const currentTime = new Date();
-    if (date) {
-        let dateDay = date.getDate();
-        let dayDiff = dateDay - currentTime.getDate();
-        let monthDiff = Math.abs(date.getMonth() - currentTime.getMonth());
-        let yearDiff = Math.abs(date.getFullYear() - currentTime.getFullYear());
 
-        // generate day
-        if (!isMerged) {
-            if (!yearDiff && !monthDiff && !dayDiff) {
-                dateStr = 'Today';
-            } else if (!yearDiff && !monthDiff && dayDiff == -1) {
-                dateStr = 'Yesterday';
-            } else if (!yearDiff && !monthDiff && dayDiff == 1) {
-                dateStr = 'Tomorrow';
-            } else if (!yearDiff && !monthDiff && dayDiff < 7 && dayDiff > 0) {
-                dateStr =  ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
-            } else {
-                daySuff = [1, 21, 31].includes(dateDay) ? 'st' : [2, 22].includes(dateDay) ? 'nd' : [3, 23].includes(dateDay) ? 'rd' : 'th';
-                dateStr = formatDate(date, `d${daySuff} n${yearDiff ? ' y' : ''}`, false);                
-            }
-        }
+    let dateDay = date.getDate();
+    let dayDiff = dateDay - currentTime.getDate();
+    let monthDiff = Math.abs(date.getMonth() - currentTime.getMonth());
+    let yearDiff = Math.abs(date.getFullYear() - currentTime.getFullYear());
 
-        // generate time
-        if (!isFullDay && !dateStr.includes('/')) {
-            dateStr += '-';
-            dateStr += formatTime(date);
+    // generate day
+    if (!isMerged) {
+        if (!yearDiff && !monthDiff && !dayDiff) {
+            dateStr = 'Today';
+        } else if (!yearDiff && !monthDiff && dayDiff == -1) {
+            dateStr = 'Yesterday';
+        } else if (!yearDiff && !monthDiff && dayDiff == 1) {
+            dateStr = 'Tomorrow';
+        } else if (!yearDiff && !monthDiff && dayDiff < 7 && dayDiff > 0) {
+            dateStr =  ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
+        } else {
+            daySuff = [1, 21, 31].includes(dateDay) ? 'st' : [2, 22].includes(dateDay) ? 'nd' : [3, 23].includes(dateDay) ? 'rd' : 'th';
+            dateStr = formatDate(date, `d${daySuff} n${yearDiff ? ' y' : ''}`, false);                
         }
-    } else {
-        dateStr = 'inf';
+    }
+
+    // generate time
+    if (!isFullDay && !dateStr.includes('/')) {
+        dateStr += '-';
+        dateStr += formatTime(date);
     }
 
     return dateStr;
@@ -185,8 +175,8 @@ async function refreshReminders() {
 
     // sort reminders
     remindersData.sort((a, b) => {
-        let dateOne = a.date;
-        let dateTwo = b.date;
+        let dateOne = a.dateTime;
+        let dateTwo = b.dateTime;
 
         if (!dateOne && !dateTwo) {
             return 0
@@ -219,8 +209,8 @@ async function addNewReminderDom(reminderData) {
     if (reminderInputCon.lastChild) {
         const prevReminderData = await getData('reminders', parseInt(reminderInputCon.lastChild.getAttribute('data-id')));
         if (
-            (prevReminderData.date == null && reminderData.date == null) ||
-            (prevReminderData.date && reminderData.date && (formatDate(prevReminderData.date, 'ymd') == formatDate(reminderData.date, 'ymd')))
+            (prevReminderData.dateType == 'infinite' && reminderData.dateType == 'infinite') ||
+            (prevReminderData.dateType != 'infinite' && reminderData.dateType != 'infinite' && (formatDate(prevReminderData.dateTime, 'ymd') == formatDate(reminderData.dateTime, 'ymd')))
         ) {
             conClassList += ' mergedReminder';
             isMerged = true;
@@ -230,27 +220,31 @@ async function addNewReminderDom(reminderData) {
     reminderHTML.className = conClassList;
     reminderHTML.setAttribute('data-id', reminderData.id);
 
+
     // generate children html
-    // format date
-    
-    const timeDifference = reminderData.date?.getTime() - (new Date()).getTime();
-    const isToday = reminderData.date ? formatDate(reminderData.date, 'ymd') == formatDate(new Date(), 'ymd') : false;
+
+
+    const timeDifference = reminderData.dateTime.getTime() - (new Date()).getTime();
+    const isToday = formatDate(reminderData.dateTime, 'ymd') == formatDate(new Date(), 'ymd');
     
     let dateClassList = '';
     let timeClassList = '';
 
+    // add past/present/future colouring to date and time
+    // timeDifference < 0 means dateTime is older than current time
     if (timeDifference < 0) {
         dateClassList += isToday ? ' dodgerblue' : ' crimson'
         timeClassList += ' crimson';
-    } else if (isToday) {
+    } else if (isToday) { // later on in the day
         dateClassList += ' dodgerblue';
         timeClassList += ' dodgerblue';
     }
     
-    let dateStr = formatSmartDateTime(reminderData.date, reminderData.isFullDay, isMerged);
-    
+    // format datetime into human readable
+    let dateStr = formatSmartDateTime(reminderData.dateTime, reminderData.dateType == 'date', isMerged);
+
     let timedClass = '';
-    if (dateStr == 'inf') {
+    if (reminderData.dateType == 'infinite') {
         timedClass = ' timeless'
     } else {
         timedClass = ' timed'
@@ -258,14 +252,15 @@ async function addNewReminderDom(reminderData) {
 
     // split into day/time
     let dateTimeArr = dateStr.split('-');
-    
+        
     let dateSpan = document.createElement('span');
     dateSpan.className = 'reminderDate' + dateClassList + timedClass;
     
     let timeSpan = document.createElement('span');
     timeSpan.className = 'reminderTime' + timeClassList + timedClass;
 
-    if (dateTimeArr[0] == 'inf') {
+    // if dateType is infinite
+    if (reminderData.dateType == 'infinite') {
         dateSpan.innerHTML = '&nbsp;';
         timeSpan.innerHTML = '&nbsp;';
     } else if (dateTimeArr.length > 1){
@@ -487,28 +482,65 @@ popupSec.addEventListener('click', event => {
 submitPopupBtn.addEventListener('click', () => submitPopup());
 clearPopupBtn.addEventListener('click', () => resetPopup());
 
-enableDateInput.addEventListener('change', () => {
-    dateInput.disabled = !enableDateInput.checked;
-});
-enableTimeInput.addEventListener('change', () => {
-    timeInput.disabled = !enableTimeInput.checked;
-});
+infDTOpt.addEventListener('click', selectInfOpt);
+dateDTOpt.addEventListener('click', selectDateOpt);
+dateTimeDTOpt.addEventListener('click', selectDateTimeOpt);
+let fp;
+function selectInfOpt() {
+    infDTOpt.classList.add('optBtnSelected');
+    dateDTOpt.classList.remove('optBtnSelected');
+    dateTimeDTOpt.classList.remove('optBtnSelected');
+
+    fp?.destroy();
+    dateTimeInput.style.display = 'none';
+
+    dateTimeInput.dateType = 'infinity';
+}
+function selectDateOpt() {
+    dateDTOpt.classList.add('optBtnSelected');
+    infDTOpt.classList.remove('optBtnSelected');
+    dateTimeDTOpt.classList.remove('optBtnSelected');
+
+    fp = flatpickr(
+        "#dateTimeInput", 
+        {
+            defaultDate: new Date(),
+            dateFormat: "J F Y"
+        }
+    );
+    dateTimeInput.style.display = 'inline';
+
+    dateTimeInput.dateType = 'date';
+}
+function selectDateTimeOpt() {
+    dateTimeDTOpt.classList.add('optBtnSelected');
+    dateDTOpt.classList.remove('optBtnSelected');
+    infDTOpt.classList.remove('optBtnSelected');
+
+    fp = flatpickr(
+        "#dateTimeInput", 
+        {
+            defaultDate: new Date(),
+            dateFormat: "H:i J F Y",
+            enableTime: true,
+            time_24hr: true
+        }
+    );
+    dateTimeInput.style.display = 'inline';
+
+    dateTimeInput.dateType = 'datetime';
+}
 
 // data validation and submission
 function checkInputs() {
     let validInputs = true;
 
+    // check name field is less than 50 characters long
     if (nameInput.value.length > 50) {
         popupError.textContent = 'Name too long';
         validInputs = false;
-    } else if (!nameInput.value) {
+    } else if (!nameInput.value) { // make sure a name actually exists
         popupError.textContent = 'Please enter a name';
-        validInputs = false;
-    } else if (enableDateInput.checked && !dateInput.value) {
-        popupError.textContent = 'Please enter a date';
-        validInputs = false;
-    } else if (enableTimeInput.checked && !timeInput.value) {
-        popupError.textContent = 'Please enter a time';
         validInputs = false;
     }
     
@@ -526,19 +558,24 @@ function togglePopup(show, settingType, data) {
 
     popupTitle.textContent = settingsTypes[settingType];
 
-    // input data to form if exists
+    // input data to form if exists (edit operation)
     if (data) {
         nameInput.value = data.name;
-        if (data.date) {
-            enableDateInput.checked = true;
-            dateInput.disabled = false;
-            dateInput.value = formatDate(data.date, 'y-m-d');
+
+        switch (data.dateType) {
+            case 'infinite':
+                infDTOpt.click();
+                break;
+            case 'date':
+                dateDTOpt.click();
+                fp.setDate(data.dateTime);
+                break;
+            case 'datetime':
+                dateTimeDTOpt.click();
+                fp.setDate(data.dateTime);
+                break;
         }
-        if (data.date && !data.isFullDay) {
-            enableTimeInput.checked = true;
-            timeInput.disabled = false;
-            timeInput.value = formatTime(data.date);
-        }
+
     }
     setTimeout(() => nameInput.focus(), 50);
 }
@@ -576,16 +613,12 @@ function submitPopup() {
     }
 }
 function resetPopup(clearTitle = false) {
+// review
+
     if (clearTitle) popupTitle.textContent = '';
     // clear inputs
     nameInput.value = '';
-    dateInput.value = '';
-    timeInput.value = '';
+    infDTOpt.click();
     // clear errors
     popupError.textContent = '';
-    // disable stuff
-    enableDateInput.checked = false;
-    dateInput.disabled = true;
-    enableTimeInput.checked = false;
-    timeInput.disabled = true;
 }

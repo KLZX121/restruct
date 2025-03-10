@@ -117,12 +117,9 @@ Popup
 }
 #popupTitle {
     padding-bottom: 5px;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     border-bottom: 1px solid lightgrey;
     font-size: 1.2em;
-}
-#dateInput, #timeInput {
-    width: 30%;
 }
 .inputToggle {
     position: absolute;
@@ -132,7 +129,7 @@ Popup
 .inputDiv {
     display: flex;
     flex-direction: column;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 .inputLabel {
     font-size: 0.8em;
@@ -140,10 +137,11 @@ Popup
 }
 .popupInput {
     padding: 2px;
-    border: 1px solid grey;
-    border-radius: 3px;
-    outline: none;
     width: auto;
+    
+    outline: none;
+    border: 1px solid skyblue;
+    border-radius: 3px;
 }
 .popupInput:disabled {
     background-color: lightgrey;
@@ -154,20 +152,72 @@ Popup
     font-size: 0.8em;
     color: crimson;
 }
-#submitPopupBtn {
-    width: 50px;
-}
-#clearPopupBtn {
-    position: absolute;
-    right: 4%;
-    top: 7%;
-    font-size: 0.8em;
-}
-#clearPopupBtn:hover {
-    color: rgb(158, 158, 158);
-    cursor: pointer;
+
+#nameInput {
+    width: 50%;
+    align-self: center;
 }
 
+.dateTimeInputOptCon {
+    display: flex;
+    justify-content: space-between;
+}
+.dateTimeInputOpt {
+    font-family: 'Open Sans', sans-serif;
+    width: 100%;
+    display: inline;
+    margin: 2px;
+    padding: 2px;
+
+    border: 1px skyblue solid;
+    border-radius: 2px;
+    background-color: rgba(0, 0, 0, 0.08);
+    outline: none;
+
+    cursor: pointer;
+}
+.dateTimeInputOpt:hover {
+    font-weight: bold;
+}
+.optBtnSelected {
+    background-color: skyblue;
+}
+.optBtnSelected {
+    font-weight: normal !important;
+}
+
+#dateTimeInput {
+    margin-top: 10px;
+    width: 60%;
+    height: 100%;
+    align-self: center;
+
+    text-align: center;
+    font-size: 0.8em;
+}
+
+#popupControlBtnsCon {
+    border-top: 1px solid lightgrey;
+    padding-top: 10px;
+
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+.popupCtrlBtns {
+    font-family: 'Space Mono', monospace;
+    border: 1px solid white;
+    border-radius: 5px;
+}
+.popupCtrlBtns:hover {
+    cursor: pointer;
+    border: 1px solid black;
+}
+#clearPopupBtn {
+    background-color: rgba(200,0,0,0.4);
+}
+#submitPopupBtn {
+    background-color: rgba(0, 180,0, 0.5);
+}
 /* 
 ===============
 Item Menu
