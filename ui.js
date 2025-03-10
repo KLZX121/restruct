@@ -11,6 +11,7 @@
 openDb(() => {
     refreshReminders()
     loadQuickNotes()
+    loadPlannerData()
 });
 
 // generate a reminder data object from the form
@@ -337,6 +338,105 @@ function loadQuickNotes() {
 
 function saveQuickNotes(data) {
     addEditData('quicknotes', data, true);
+}
+
+// ===============
+// PLANNER (temporary cmd line until ui is developed)
+// ===============
+
+document.addEventListener('keyup', event => {
+    if (document.activeElement != document.body || event.ctrlKey) return;
+    switch (event.key) {
+        case 'p':
+            plannerCmd.focus();
+            break;
+    }
+});
+
+plannerCmd.addEventListener('keyup', event => {
+    if (event.key == 'Escape') {
+        plannerCmd.blur();
+    }
+});
+
+plannerCmd.addEventListener('keyup', e => {
+    if (e.key == 'Enter') {
+        submitPlannerCmd(plannerCmd.value);
+        plannerCmd.blur();
+    }
+})
+
+plannerCmd.addEventListener('focus', () => plannerCmdHelp.style.display = 'block');
+plannerCmd.addEventListener('blur', () => plannerCmdHelp.style.display = 'none');
+
+function submitPlannerCmd(value) {
+    
+    try {
+        eventParams = value.split('.');
+        
+        switch (eventParams[0]) {
+            case 'add':
+                if (eventParams.length != 5) throw 'invalid cmd'
+        
+                plannerCmd.value = '';
+        
+                eventObject = {
+                    startTime: eventParams[1],
+                    endTime: eventParams[2],
+                    name: eventParams[3],
+                    description: eventParams[4]
+                }
+        
+                addEditData('planner', eventObject);
+                break;
+
+            case 'edit':
+                if (eventParams.length != 6) throw 'invalid cmd'
+
+                plannerCmd.value = '';
+
+                eventObject = {
+                    id: parseInt(eventParams[1]),
+                    startTime: eventParams[2],
+                    endTime: eventParams[3],
+                    name: eventParams[4],
+                    description: eventParams[5]
+                }
+
+                addEditData('planner', eventObject);
+                break;
+
+            case 'del':
+                if (eventParams.length != 2) throw 'invalid cmd'
+
+                plannerCmd.value = '';
+
+                deleteData('planner', parseInt(eventParams[1]));
+                break;
+        }
+
+        loadPlannerData();
+       
+    } catch(error) {
+        alert(error)
+    }
+}
+
+function loadPlannerData() {
+    plannerData.innerHTML = '';
+    getAllData('planner')
+    .then(events => {
+        events.forEach(event => {
+            let eventHTML = 
+            `<div style="font-family: monospace;">
+            <span style="color: dodgerblue; border-right: 1px solid; padding-right: 1em;">${event.id}</span> <span style="color: grey;">${event.startTime} ${event.endTime == 'null' ? '' : `- ${event.endTime}`}</span><br>
+            <span style="font-size: 1.1em ">&nbsp;&nbsp;&nbsp;${event.name}</span><br>
+            <span style="color: grey;">&nbsp;&nbsp;&nbsp;${event.description == 'null' ? '' : event.description + '<br>'}</span><br>
+            </div>`
+
+            plannerData.innerHTML += eventHTML;
+        })
+    })
 }
 
 // ===============

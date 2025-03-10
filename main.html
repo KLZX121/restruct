@@ -50,21 +50,29 @@
 
         <div class="bodyCon">
             <div class="bodyConHead">
-                <span class="subTitle">Tasks</span>
-                <div class="newBtn" id="newTaskBtn"><div></div><div></div></div>
+                <span class="subTitle">Planner</span>
             </div>
 
-            <div class="inputCon" id="taskInputCon"></div>
+            <div class="inputCon" id="taskInputCon">
+                <input type="text" id="plannerCmd" autocomplete="off" style="font-family: monospace; padding: 0.3em; width: 100%; outline: none; border: 2px solid lightgrey;">
+
+                <div id="plannerCmdHelp" style="display: none; background-color: rgba(0, 0, 0, 0.1); font-family: monospace; margin-top: 10px;">
+                    add.[start_time].[end_time||"null"].[name].[desc.||"null"]<br>
+                    &nbsp;&nbsp;(Adds a new event)<br>
+                    &nbsp;&nbsp;datetime = dd-mm-yyy-hh:mm||hh:mm<br>
+                    <br>
+                    edit.[id].[options]<br>
+                    &nbsp;&nbsp;(Edits an existing event)<br>
+                    <br>
+                    del.[id]<br>
+                    &nbsp;&nbsp;(Deletes an existing event)<br>
+                </div>
+
+                <div id="plannerData" style="border-top: 1px solid grey; margin-top: 10px; padding-top: 10px"></div>
+            </div>
         </div>
 
 
-        <div class="bodyCon">
-            <div class="bodyConHead">
-                <span class="subTitle">Goals</span>
-                <div class="newBtn" id="newGoalBtn"><div></div><div></div></div>
-            </div>
-            <div class="inputCon"></div>
-        </div>
     </section>
 
 

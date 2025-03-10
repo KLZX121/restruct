@@ -261,6 +261,7 @@ Body
     padding: 5px;
     box-sizing: border-box;
     height: 300px;
+    overflow: auto;
 }
 .inputElement {
     outline: none;
@@ -334,10 +335,6 @@ Quick notes
 Reminders
 ===============
 */
-
-#reminderInputCon {
-    overflow: auto;
-}
 
 .reminderCon {
     display: flex;

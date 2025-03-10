@@ -1,7 +1,7 @@
 let db;
 
 function openDb(callback) {
-	const openRequest = window.indexedDB.open("restruct_db", 2);
+	const openRequest = window.indexedDB.open("restruct_db", 4);
 
 	openRequest.addEventListener("error", () => console.error("Database failed to open"));
 
@@ -13,28 +13,56 @@ function openDb(callback) {
 		callback();
 	});
 
-	openRequest.addEventListener("upgradeneeded", e => {
+	openRequest.addEventListener("upgradeneeded", (e) => {
 		db = e.target.result;
-
-		// reminders table
-		if (!db.objectStoreNames.contains('reminders')) {
-			const reminderObjectStore = db.createObjectStore("reminders", {keyPath: "id", autoIncrement: true});
+	
+		console.log(`Upgrading database to version ${db.version}...`);
+	
+		// Check and create "reminders" object store
+		if (!db.objectStoreNames.contains("reminders")) {
+			const reminderObjectStore = db.createObjectStore("reminders", { keyPath: "id", autoIncrement: true });
 			reminderObjectStore.createIndex("name", "name");
 			reminderObjectStore.createIndex("date", "date");
 			reminderObjectStore.createIndex("isFullDay", "isFullDay");
+			console.log("Created 'reminders' object store.");
+		} else {
+			const reminderObjectStore = e.target.transaction.objectStore("reminders");
+			if (!reminderObjectStore.indexNames.contains("name")) reminderObjectStore.createIndex("name", "name");
+			if (!reminderObjectStore.indexNames.contains("date")) reminderObjectStore.createIndex("date", "date");
+			if (!reminderObjectStore.indexNames.contains("isFullDay")) reminderObjectStore.createIndex("isFullDay", "isFullDay");
+			console.log("Updated 'reminders' object store indexes.");
 		}
-
-		// quick notes table
-		if (!db.objectStoreNames.contains('quicknotes')) {
-			const quickNObjectStore = db.createObjectStore("quicknotes");
+	
+		// Check and create "quicknotes" object store
+		if (!db.objectStoreNames.contains("quicknotes")) {
+			db.createObjectStore("quicknotes");
+			console.log("Created 'quicknotes' object store.");
 		}
-
-		console.log("Database setup complete");
+	
+		// Check and create "planner" object store
+		if (!db.objectStoreNames.contains("planner")) {
+			const plannerObjectStore = db.createObjectStore("planner", { keyPath: "id", autoIncrement: true });
+			plannerObjectStore.createIndex("startTime", "startTime");
+			plannerObjectStore.createIndex("endTime", "endTime");
+			plannerObjectStore.createIndex("name", "name");
+			plannerObjectStore.createIndex("description", "description");
+			console.log("Created 'planner' object store.");
+		} else {
+			const plannerObjectStore = e.target.transaction.objectStore("planner");
+			if (!plannerObjectStore.indexNames.contains("startTime")) plannerObjectStore.createIndex("startTime", "startTime");
+			if (!plannerObjectStore.indexNames.contains("endTime")) plannerObjectStore.createIndex("endTime", "endTime");
+			if (!plannerObjectStore.indexNames.contains("name")) plannerObjectStore.createIndex("name", "name");
+			if (!plannerObjectStore.indexNames.contains("description")) plannerObjectStore.createIndex("description", "description");
+			console.log("Updated 'planner' object store indexes.");
+		}
+	
+		console.log("Database upgrade complete.");
 	});
+	
 }
 
 // adds or edits one entry
-function addEditData(objectStore, data, isSingleton) {
+function addEditData(objectStore, data, isSingleton = false) {
 	const transaction = db.transaction(objectStore, "readwrite")
 	const os = transaction.objectStore(objectStore);
 
