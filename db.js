@@ -1,13 +1,35 @@
+const DB_NAME = 'restruct_db';
+const DB_VERS = 6;
+
+// if PROD_MODE is true, all object stores will be cleared
+const PROD_MODE = true;
+
 let db;
 
+
+class ObjectStoreData {
+	osName;
+	dataKeys = [];
+
+	constructor(name, keys) {
+		this.osName = name;
+		this.dataKeys = keys;
+	}
+}
+
+const objectStoreStructures = [
+	new ObjectStoreData('reminders', ['id', 'name', 'dateType', 'dateTime']),
+	new ObjectStoreData('quicknotes', []),
+	new ObjectStoreData('planner', ['startTime', 'endTime', 'name', 'description'])
+];
+
+
 function openDb(callback) {
-	const openRequest = window.indexedDB.open("restruct_db", 4);
+	const openRequest = window.indexedDB.open(DB_NAME, DB_VERS);
 
 	openRequest.addEventListener("error", () => console.error("Database failed to open"));
 
 	openRequest.addEventListener("success", () => {
-		console.log("Database opened successfully");
-
 		db = openRequest.result;
 
 		callback();
@@ -16,49 +38,27 @@ function openDb(callback) {
 	openRequest.addEventListener("upgradeneeded", (e) => {
 		db = e.target.result;
 	
-		console.log(`Upgrading database to version ${db.version}...`);
-	
-		// Check and create "reminders" object store
-		if (!db.objectStoreNames.contains("reminders")) {
-			const reminderObjectStore = db.createObjectStore("reminders", { keyPath: "id", autoIncrement: true });
-			reminderObjectStore.createIndex("name", "name");
-			reminderObjectStore.createIndex("date", "date");
-			reminderObjectStore.createIndex("isFullDay", "isFullDay");
-			console.log("Created 'reminders' object store.");
-		} else {
-			const reminderObjectStore = e.target.transaction.objectStore("reminders");
-			if (!reminderObjectStore.indexNames.contains("name")) reminderObjectStore.createIndex("name", "name");
-			if (!reminderObjectStore.indexNames.contains("date")) reminderObjectStore.createIndex("date", "date");
-			if (!reminderObjectStore.indexNames.contains("isFullDay")) reminderObjectStore.createIndex("isFullDay", "isFullDay");
-			console.log("Updated 'reminders' object store indexes.");
+		console.log('UPGRADING DB');
+
+		if (PROD_MODE) {
+			objectStoreStructures.forEach(os => db.deleteObjectStore(os.osName));
 		}
-	
-		// Check and create "quicknotes" object store
-		if (!db.objectStoreNames.contains("quicknotes")) {
-			db.createObjectStore("quicknotes");
-			console.log("Created 'quicknotes' object store.");
-		}
-	
-		// Check and create "planner" object store
-		if (!db.objectStoreNames.contains("planner")) {
-			const plannerObjectStore = db.createObjectStore("planner", { keyPath: "id", autoIncrement: true });
-			plannerObjectStore.createIndex("startTime", "startTime");
-			plannerObjectStore.createIndex("endTime", "endTime");
-			plannerObjectStore.createIndex("name", "name");
-			plannerObjectStore.createIndex("description", "description");
-			console.log("Created 'planner' object store.");
-		} else {
-			const plannerObjectStore = e.target.transaction.objectStore("planner");
-			if (!plannerObjectStore.indexNames.contains("startTime")) plannerObjectStore.createIndex("startTime", "startTime");
-			if (!plannerObjectStore.indexNames.contains("endTime")) plannerObjectStore.createIndex("endTime", "endTime");
-			if (!plannerObjectStore.indexNames.contains("name")) plannerObjectStore.createIndex("name", "name");
-			if (!plannerObjectStore.indexNames.contains("description")) plannerObjectStore.createIndex("description", "description");
-			console.log("Updated 'planner' object store indexes.");
-		}
-	
-		console.log("Database upgrade complete.");
+
+		objectStoreStructures.forEach(osObj => {
+			let os;
+			// create key if 'id' data field exists
+			if (osObj.dataKeys.includes('id')) {
+				os = db.createObjectStore(osObj.osName, {keyPath: 'id', autoIncrement: true});
+			} else {
+				os = db.createObjectStore(osObj.osName);
+			}
+
+			osObj.dataKeys.forEach(osDataKey => {
+				if (osDataKey != 'id') os.createIndex(osDataKey, osDataKey);
+			})
+		})
+
 	});
-	
 }
 
 // adds or edits one entry
